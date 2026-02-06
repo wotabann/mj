@@ -7,62 +7,119 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <style>
-body { font-family: sans-serif; padding: 10px; padding-bottom: 240px; }
-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
-th, td { border: 1px solid #ccc; padding: 6px; text-align: center; }
-input.score { width: 80px; font-size: 18px; text-align: right; }
-.plus { color: green; font-weight: bold; }
-.minus { color: red; font-weight: bold; }
-.toggle { padding: 6px; }
-button.main { width: 48%; padding: 10px; font-size: 18px; }
-button:disabled { opacity: 0.4; }
-
-.keypad {
-  position: fixed; bottom: 0; left: 0; width: 100%;
-  background: #f9f9f9; border-top: 1px solid #ccc;
-  padding: 6px;
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px;
+:root{
+  --green-dark:#0f3d2e;
+  --green-base:#1f6f54;
+  --green-light:#2f8f6a;
+  --plus:#7CFF9B;
+  --minus:#FF8A8A;
 }
-.keypad button { padding: 14px; font-size: 18px; }
+body{
+  background:var(--green-dark);
+  color:#fff;
+  font-family:sans-serif;
+  padding:10px;
+  padding-bottom:260px;
+}
+body.light{
+  background:#e6f4ef;
+  color:#0f3d2e;
+}
+h3{text-align:center;}
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:var(--green-base);
+  border-radius:12px;
+  overflow:hidden;
+}
+th,td{padding:8px;text-align:center;}
+tr.active{background:var(--green-light);}
+input.score{
+  width:90px;
+  font-size:20px;
+  text-align:right;
+  background:#0c2e22;
+  color:#fff;
+  border:none;
+  border-radius:8px;
+  padding:6px;
+}
+button{
+  border:none;
+  border-radius:10px;
+  padding:8px;
+}
+button.main{
+  width:48%;
+  font-size:18px;
+  padding:14px 0;
+  background:#3ba37a;
+}
+button:disabled{opacity:.4;}
+.plus{color:var(--plus);font-weight:bold;}
+.minus{color:var(--minus);font-weight:bold;}
+.toggle.plus{background:#2ecc71;}
+.toggle.minus{background:#ff7676;}
 
-#history button { font-size: 12px; }
+.keypad{
+  position:fixed;
+  bottom:0;left:0;width:100%;
+  background:var(--green-base);
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:6px;
+  padding:10px;
+}
+.keypad button{
+  font-size:20px;
+  padding:16px 0;
+}
+
+.name{font-weight:bold;}
 </style>
 </head>
 
 <body>
 
-<h3>半荘 <span id="round">1</span></h3>
+<h3>
+半荘 <span id="round">1</span>
+<button id="themeToggle" style="float:right;">🌙</button>
+</h3>
 
-<table id="input">
+<table>
 <tr><th>名前</th><th>スコア</th><th>トビ賞</th><th>最終</th></tr>
-<tr data-idx="0"><td>A</td><td><input class="score" readonly></td><td><button class="toggle"></button></td><td class="final"></td></tr>
-<tr data-idx="1"><td>B</td><td><input class="score" readonly></td><td><button class="toggle"></button></td><td class="final"></td></tr>
-<tr data-idx="2"><td>C</td><td><input class="score" readonly></td><td><button class="toggle"></button></td><td class="final"></td></tr>
-<tr data-idx="3"><td>D</td><td><input class="score" readonly></td><td><button class="toggle"></button></td><td class="final"></td></tr>
+<tr data-idx="0"><td><span class="name">A</span></td><td><input class="score" readonly></td><td><button class="toggle"></button></td><td class="final"></td></tr>
+<tr data-idx="1"><td><span class="name">B</span></td><td><input class="score" readonly></td><td><button class="toggle"></button></td><td class="final"></td></tr>
+<tr data-idx="2"><td><span class="name">C</span></td><td><input class="score" readonly></td><td><button class="toggle"></button></td><td class="final"></td></tr>
+<tr data-idx="3"><td><span class="name">D</span></td><td><input class="score" readonly></td><td><button class="toggle"></button></td><td class="final"></td></tr>
 </table>
 
-<div style="display:flex;justify-content:space-between;">
+<div style="display:flex;justify-content:space-between;margin-top:10px;">
   <button id="calc" class="main">計算</button>
   <button id="save" class="main" disabled>登録</button>
 </div>
 
-<h3>履歴（直近）</h3>
+<h3>履歴</h3>
 <table id="history"></table>
 
-<!-- テンキー -->
 <div class="keypad">
   <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button data-k="up">↑</button>
   <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button><button data-k="down">↓</button>
   <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button data-k="sign">±</button>
   <button data-k="0">0</button>
-  <button data-k="clear" style="grid-column:span 3;">C（長押し）</button>
+  <button data-k="clear" style="grid-column:span 3;">C</button>
 </div>
 
 <script>
-const GAS_URL = "★★★GASのWebApp URL★★★";
-let cur = 0, round = 1, lastRaw=[], lastScore=[], clearTimer=null;
+const GAS_URL="★★★ここにGASのURL★★★";
+let cur=0,round=1,fresh=[true,true,true,true],lastRaw=[],lastScore=[];
 
-function focus(i){ cur=Math.max(0,Math.min(3,i)); }
+function focus(i){
+  cur=Math.max(0,Math.min(3,i));
+  fresh[cur]=true;
+  $('tr[data-idx]').removeClass('active').eq(cur).addClass('active');
+}
 focus(0);
 
 $('.score').on('click',e=>focus($(e.target).closest('tr').data('idx')));
@@ -77,55 +134,58 @@ $('.keypad button').on('click',function(){
   const k=$(this).data('k');
   const inp=$('tr[data-idx]').eq(cur).find('.score');
   let v=inp.val();
-  if(k==='up')focus(cur-1);
-  else if(k==='down')focus(cur+1);
-  else if(k==='sign'){ if(v)inp.val(v.startsWith('-')?v.slice(1):'-'+v); }
-  else if(k!=='clear') inp.val(v+k);
+  if(k==='up')return focus(cur-1);
+  if(k==='down')return focus(cur+1);
+  if(fresh[cur]){inp.val('');v='';fresh[cur]=false;}
+  if(k==='sign'&&v)inp.val(v.startsWith('-')?v.slice(1):'-'+v);
+  if(/[0-9]/.test(k))inp.val(v+k);
+  if(k==='clear'){inp.val('');fresh[cur]=true;}
 });
 
-$('[data-k="clear"]').on('touchstart mousedown',()=>{
-  clearTimer=setTimeout(()=>$('tr[data-idx]').eq(cur).find('.score').val(''),600);
-}).on('touchend mouseup mouseleave',()=>clearTimeout(clearTimer));
-
-function round56(n){ const i=Math.floor(n); return n-i<0.6?i:i+1; }
+function r56(n){const i=Math.floor(n);return n-i<0.6?i:i+1;}
 
 $('#calc').on('click',()=>{
   let raw=[],bonus=[],empty=-1;
   $('tr[data-idx]').each(function(i){
     const v=$(this).find('.score').val();
-    if(v===''){ if(empty!==-1)return alert('未入力は1人まで'); empty=i; raw.push(null); }
+    if(v===''){if(empty!==-1)return alert('未入力は1人まで');empty=i;raw.push(null);}
     else raw.push(Number(v));
     const b=$(this).find('.toggle');
     bonus.push(b.hasClass('plus')?10:b.hasClass('minus')?-10:0);
   });
-  if(empty!==-1){ const s=raw.filter(v=>v!==null).reduce((a,b)=>a+b,0); raw[empty]=-s; $('tr[data-idx]').eq(empty).find('.score').val(-s); }
-  const pc=bonus.filter(v=>v===10).length, mc=bonus.filter(v=>v===-10).length;
-  if(pc!==mc)return alert('トビと飛ばしは両方必要');
-  const order=raw.map((v,i)=>({v,i})).sort((a,b)=>b.v-a.v);
+  if(empty!==-1){
+    const s=raw.filter(v=>v!==null).reduce((a,b)=>a+b,0);
+    raw[empty]=1000-s;
+    $('tr[data-idx]').eq(empty).find('.score').val(raw[empty]);
+  }
+  if(bonus.filter(v=>v===10).length!==bonus.filter(v=>v===-10).length)
+    return alert('トビと飛ばしはセット');
+  const ord=raw.map((v,i)=>({v,i})).sort((a,b)=>b.v-a.v);
   let t=[...raw];
-  t[order[0].i]+=500; t[order[1].i]+=100; t[order[2].i]-=100; t[order[3].i]-=300;
-  let sc=t.map(v=>round56((v-300)/10));
-  const sum=sc.reduce((a,b)=>a+b,0); sc[order[0].i]-=sum;
+  t[ord[0].i]+=500;t[ord[1].i]+=100;t[ord[2].i]-=100;t[ord[3].i]-=300;
+  let sc=t.map(v=>r56((v-300)/10));
+  sc[ord[0].i]-=sc.reduce((a,b)=>a+b,0);
   sc=sc.map((v,i)=>v+bonus[i]);
   $('.final').each((i,e)=>$(e).text(sc[i]).removeClass('plus minus').addClass(sc[i]>=0?'plus':'minus'));
-  lastRaw=raw; lastScore=sc; $('#save').prop('disabled',false);
+  lastRaw=raw;lastScore=sc;
+  $('#save').prop('disabled',false);
 });
-
-function resetAll(){
-  $('.score').val(''); $('.toggle').removeClass('plus minus').text('');
-  $('.final').text('').removeClass('plus minus');
-  $('#save').prop('disabled',true); focus(0);
-}
 
 $('#save').on('click',()=>{
   fetch(GAS_URL,{method:'POST',body:JSON.stringify({round,raw:lastRaw,score:lastScore})})
-  .then(()=>{ round++; $('#round').text(round); resetAll(); loadHistory(); });
+  .then(()=>{round++;$('#round').text(round);reset();loadHistory();});
 });
+
+function reset(){
+  $('.score').val('');$('.toggle').removeClass('plus minus').text('');
+  $('.final').text('');fresh=[true,true,true,true];focus(0);
+  $('#save').prop('disabled',true);
+}
 
 function loadHistory(){
   fetch(GAS_URL+'?action=get').then(r=>r.json()).then(d=>{
     let h='<tr><th>半荘</th><th>A</th><th>B</th><th>C</th><th>D</th><th></th></tr>';
-    d.slice(-5).reverse().forEach((r,i)=>{
+    d.reverse().forEach((r,i)=>{
       if(!r[10])return;
       h+=`<tr><td>${r[1]}</td>${r.slice(6,10).map(v=>`<td class="${v>=0?'plus':'minus'}">${v}</td>`).join('')}
       <td><button onclick="invalidate(${d.length-i+1})">無効</button></td></tr>`;
@@ -134,12 +194,18 @@ function loadHistory(){
   });
 }
 function invalidate(row){
-  if(confirm('この半荘を無効にしますか？'))
+  if(confirm('無効にしますか？'))
     fetch(GAS_URL+'?action=invalidate&row='+row).then(loadHistory);
 }
 
+const t=localStorage.getItem('theme');
+if(t==='light')$('body').addClass('light');
+$('#themeToggle').on('click',()=>{
+  $('body').toggleClass('light');
+  localStorage.setItem('theme',$('body').hasClass('light')?'light':'dark');
+});
+
 loadHistory();
 </script>
-
 </body>
 </html>
