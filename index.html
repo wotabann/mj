@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>麻雀スコア管理</title>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<style>
+body { font-family: sans-serif; padding: 10px; padding-bottom: 240px; }
+table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+th, td { border: 1px solid #ccc; padding: 6px; text-align: center; }
+input.score { width: 80px; font-size: 18px; text-align: right; }
+.plus { color: green; font-weight: bold; }
+.minus { color: red; font-weight: bold; }
+.toggle { padding: 6px; }
+button.main { width: 48%; padding: 10px; font-size: 18px; }
+button:disabled { opacity: 0.4; }
+
+.keypad {
+  position: fixed; bottom: 0; left: 0; width: 100%;
+  background: #f9f9f9; border-top: 1px solid #ccc;
+  padding: 6px;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px;
+}
+.keypad button { padding: 14px; font-size: 18px; }
+
+#history button { font-size: 12px; }
+</style>
+</head>
+
+<body>
+
+<h3>半荘 <span id="round">1</span></h3>
+
+<table id="input">
+<tr><th>名前</th><th>スコア</th><th>トビ賞</th><th>最終</th></tr>
+<tr data-idx="0"><td>A</td><td><input class="score" readonly></td><td><button class="toggle"></button></td><td class="final"></td></tr>
+<tr data-idx="1"><td>B</td><td><input class="score" readonly></td><td><button class="toggle"></button></td><td class="final"></td></tr>
+<tr data-idx="2"><td>C</td><td><input class="score" readonly></td><td><button class="toggle"></button></td><td class="final"></td></tr>
+<tr data-idx="3"><td>D</td><td><input class="score" readonly></td><td><button class="toggle"></button></td><td class="final"></td></tr>
+</table>
+
+<div style="display:flex;justify-content:space-between;">
+  <button id="calc" class="main">計算</button>
+  <button id="save" class="main" disabled>登録</button>
+</div>
+
+<h3>履歴（直近）</h3>
+<table id="history"></table>
+
+<!-- テンキー -->
+<div class="keypad">
+  <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button data-k="up">↑</button>
+  <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button><button data-k="down">↓</button>
+  <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button data-k="sign">±</button>
+  <button data-k="0">0</button>
+  <button data-k="clear" style="grid-column:span 3;">C（長押し）</button>
+</div>
+
+<script>
+const GAS_URL = "★★★GASのWebApp URL★★★";
+let cur = 0, round = 1, lastRaw=[], lastScore=[], clearTimer=null;
+
+function focus(i){ cur=Math.max(0,Math.min(3,i)); }
+focus(0);
+
+$('.score').on('click',e=>focus($(e.target).closest('tr').data('idx')));
+
+$('.toggle').on('click',function(){
+  if($(this).hasClass('plus'))$(this).removeClass('plus').addClass('minus').text('-10');
+  else if($(this).hasClass('minus'))$(this).removeClass('minus').text('');
+  else $(this).addClass('plus').text('+10');
+});
+
+$('.keypad button').on('click',function(){
+  const k=$(this).data('k');
+  const inp=$('tr[data-idx]').eq(cur).find('.score');
+  let v=inp.val();
+  if(k==='up')focus(cur-1);
+  else if(k==='down')focus(cur+1);
+  else if(k==='sign'){ if(v)inp.val(v.startsWith('-')?v.slice(1):'-'+v); }
+  else if(k!=='clear') inp.val(v+k);
+});
+
+$('[data-k="clear"]').on('touchstart mousedown',()=>{
+  clearTimer=setTimeout(()=>$('tr[data-idx]').eq(cur).find('.score').val(''),600);
+}).on('touchend mouseup mouseleave',()=>clearTimeout(clearTimer));
+
+function round56(n){ const i=Math.floor(n); return n-i<0.6?i:i+1; }
+
+$('#calc').on('click',()=>{
+  let raw=[],bonus=[],empty=-1;
+  $('tr[data-idx]').each(function(i){
+    const v=$(this).find('.score').val();
+    if(v===''){ if(empty!==-1)return alert('未入力は1人まで'); empty=i; raw.push(null); }
+    else raw.push(Number(v));
+    const b=$(this).find('.toggle');
+    bonus.push(b.hasClass('plus')?10:b.hasClass('minus')?-10:0);
+  });
+  if(empty!==-1){ const s=raw.filter(v=>v!==null).reduce((a,b)=>a+b,0); raw[empty]=-s; $('tr[data-idx]').eq(empty).find('.score').val(-s); }
+  const pc=bonus.filter(v=>v===10).length, mc=bonus.filter(v=>v===-10).length;
+  if(pc!==mc)return alert('トビと飛ばしは両方必要');
+  const order=raw.map((v,i)=>({v,i})).sort((a,b)=>b.v-a.v);
+  let t=[...raw];
+  t[order[0].i]+=500; t[order[1].i]+=100; t[order[2].i]-=100; t[order[3].i]-=300;
+  let sc=t.map(v=>round56((v-300)/10));
+  const sum=sc.reduce((a,b)=>a+b,0); sc[order[0].i]-=sum;
+  sc=sc.map((v,i)=>v+bonus[i]);
+  $('.final').each((i,e)=>$(e).text(sc[i]).removeClass('plus minus').addClass(sc[i]>=0?'plus':'minus'));
+  lastRaw=raw; lastScore=sc; $('#save').prop('disabled',false);
+});
+
+function resetAll(){
+  $('.score').val(''); $('.toggle').removeClass('plus minus').text('');
+  $('.final').text('').removeClass('plus minus');
+  $('#save').prop('disabled',true); focus(0);
+}
+
+$('#save').on('click',()=>{
+  fetch(GAS_URL,{method:'POST',body:JSON.stringify({round,raw:lastRaw,score:lastScore})})
+  .then(()=>{ round++; $('#round').text(round); resetAll(); loadHistory(); });
+});
+
+function loadHistory(){
+  fetch(GAS_URL+'?action=get').then(r=>r.json()).then(d=>{
+    let h='<tr><th>半荘</th><th>A</th><th>B</th><th>C</th><th>D</th><th></th></tr>';
+    d.slice(-5).reverse().forEach((r,i)=>{
+      if(!r[10])return;
+      h+=`<tr><td>${r[1]}</td>${r.slice(6,10).map(v=>`<td class="${v>=0?'plus':'minus'}">${v}</td>`).join('')}
+      <td><button onclick="invalidate(${d.length-i+1})">無効</button></td></tr>`;
+    });
+    $('#history').html(h);
+  });
+}
+function invalidate(row){
+  if(confirm('この半荘を無効にしますか？'))
+    fetch(GAS_URL+'?action=invalidate&row='+row).then(loadHistory);
+}
+
+loadHistory();
+</script>
+
+</body>
+</html>
