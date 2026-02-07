@@ -448,19 +448,14 @@ qs('#registerBtn').onclick = async () => {
   try {
     showLoading(true);
 
-    const url =
-      GAS_URL +
-      '?action=register' +
-      '&a=' + encodeURIComponent(calculatedScores[0]) +
-      '&b=' + encodeURIComponent(calculatedScores[1]) +
-      '&c=' + encodeURIComponent(calculatedScores[2]) +
-      '&d=' + encodeURIComponent(calculatedScores[3]);
+    const data = await postToGAS({
+      action: 'register',
+      a: calculatedScores[0],
+      b: calculatedScores[1],
+      c: calculatedScores[2],
+      d: calculatedScores[3]
+    });
 
-    const res = await fetch(url);
-
-    if (!res.ok) throw new Error('network');
-
-    const data = await res.json();
     renderHistory(data);
     resetAll();
     alert('登録しました');
@@ -542,16 +537,11 @@ async function toggleInvalid(no){
   try{
     showLoading(true);
 
-    const url =
-      GAS_URL +
-      '?action=toggle' +
-      '&no=' + encodeURIComponent(no);
-
-    const res = await fetch(url);
-
-    if(!res.ok) throw new Error('network');
-
-    const data = await res.json();
+    const data = await postToGAS({
+      action: 'toggle',
+      no: no
+    });
+  
     renderHistory(data);
 
   }catch(e){
@@ -560,6 +550,16 @@ async function toggleInvalid(no){
   }finally{
     showLoading(false);
   }
+}
+
+async function postToGAS(payload){
+  const res = await fetch(GAS_URL, {
+    method: 'POST',
+    body: JSON.stringify(payload) // ★ headers は書かない
+  });
+
+  const text = await res.text();
+  return JSON.parse(text);
 }
 
 
