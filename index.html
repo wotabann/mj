@@ -68,18 +68,24 @@ header{
 }
 
 /* トビボタン */
-.tobi-btn{
-  width:60px;
-  padding:6px 0;
-  border-radius:6px;
-  border:none;
-  background:#ddd;
-  font-weight:bold;
+.tobi-btn, .fly-btn {
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  border: 1px solid #aaa;
+  background: #f5f5f5;
+  color: #444;
+}
+.tobi-btn.on {
+  background: #c62828;
+  color: #fff;
+}
+.fly-btn.on {
+  background: #2e7d32;
+  color: #fff;
 }
 
-.tobi-plus{ background:#e6f5ee;color:var(--plus);}
-.tobi-minus{ background:#fdecea;color:var(--minus);}
-
+  
 /* 操作ボタン */
 .actions{
   display:flex;
@@ -208,27 +214,39 @@ button:disabled {
   </tr>
   <tbody id="inputRows">
     <tr data-idx="0">
-      <td>A</td>
+      <td>坂</td>
       <td><input class="score-input" readonly></td>
-      <td><button class="tobi-btn"></button></td>
+      <td class="tobi-cell">
+        <button class="tobi-btn" data-idx="0" data-type="tobi">トビ</button>
+        <button class="fly-btn"  data-idx="0" data-type="fly">飛ばし</button>
+      </td>
       <td class="final"></td>
     </tr>
     <tr data-idx="1">
       <td>B</td>
       <td><input class="score-input" readonly></td>
-      <td><button class="tobi-btn"></button></td>
+      <td class="tobi-cell">
+        <button class="tobi-btn" data-idx="1" data-type="tobi">トビ</button>
+        <button class="fly-btn"  data-idx="1" data-type="fly">飛ばし</button>
+      </td>
       <td class="final"></td>
     </tr>
     <tr data-idx="2">
       <td>C</td>
       <td><input class="score-input" readonly></td>
-      <td><button class="tobi-btn"></button></td>
+      <td class="tobi-cell">
+        <button class="tobi-btn" data-idx="2" data-type="tobi">トビ</button>
+        <button class="fly-btn"  data-idx="2" data-type="fly">飛ばし</button>
+      </td>
       <td class="final"></td>
     </tr>
     <tr data-idx="3">
       <td>D</td>
       <td><input class="score-input" readonly></td>
-      <td><button class="tobi-btn"></button></td>
+      <td class="tobi-cell">
+        <button class="tobi-btn" data-idx="3" data-type="tobi">トビ</button>
+        <button class="fly-btn"  data-idx="3" data-type="fly">飛ばし</button>
+      </td>
       <td class="final"></td>
     </tr>
   </tbody>
@@ -245,7 +263,7 @@ button:disabled {
     <thead>
       <tr>
         <th>No</th><th>日時</th>
-        <th>A</th><th>B</th><th>C</th><th>D</th>
+        <th>坂</th><th>鈴</th><th>富</th><th>森</th>
       </tr>
     </thead>
     <tbody id="historyBody"></tbody>
@@ -292,6 +310,8 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycby1XFM-wXWJKnuSnLXpuUGh
 let focusedInput = null;
 let needClear = false;
 let calculatedScores = null;
+const tobi = [false,false,false,false];
+const fly  = [false,false,false,false];
 
 /* ========= 共通 ========= */
 const qs = s => document.querySelector(s);
@@ -371,18 +391,36 @@ qs('#calcToggle').onclick=()=>{
 };
 
 /* ========= トビ ========= */
-qsa('.tobi-btn').forEach(btn=>{
-  btn.onclick=()=>{
-    if(btn.classList.contains('tobi-plus')){
-      btn.className='tobi-btn tobi-minus';
-      btn.textContent='-10';
-    }else if(btn.classList.contains('tobi-minus')){
-      btn.className='tobi-btn';
-      btn.textContent='';
-    }else{
-      btn.className='tobi-btn tobi-plus';
-      btn.textContent='+10';
+document.querySelectorAll('.tobi-btn').forEach(btn=>{
+  btn.onclick = ()=>{
+    const i = +btn.dataset.idx;
+  
+    // 飛ばしON中なら不可
+    if (fly[i]) {
+      alert('同じ人にトビと飛ばしは設定できません');
+      return;
     }
+  
+    tobi[i] = !tobi[i];
+    btn.classList.toggle('on', tobi[i]);
+    qs('#registerBtn').disabled = true;
+  };
+});
+document.querySelectorAll('.fly-btn').forEach(btn=>{
+  btn.onclick = ()=>{
+    const i = +btn.dataset.idx;
+
+    if (tobi[i]) {
+      alert('同じ人にトビと飛ばしは設定できません');
+      return;
+    }
+
+    // 他の飛ばしをOFF
+    fly.fill(false);
+    document.querySelectorAll('.fly-btn').forEach(b=>b.classList.remove('on'));
+
+    fly[i] = true;
+    btn.classList.add('on');
     qs('#registerBtn').disabled = true;
   };
 });
@@ -415,10 +453,7 @@ qs('#calcBtn').onclick=()=>{
     return;
   }
 
-  const tobi=qsa('.tobi-btn').map(b=>b.textContent);
-  const plus=tobi.filter(t=>t==='+10').length;
-  const minus=tobi.filter(t=>t==='-10').length;
-  if(!((plus===0&&minus===0)||(plus===1&&minus===1))){
+  if(!isTobiFlyMatched()){
     calculatedScores = null;
     alert('トビ設定が不正です');
     return;
@@ -430,25 +465,16 @@ qs('#calcBtn').onclick=()=>{
     let v=s+[500,100,-100,-300][rank[i]];
     v = Math.floor((v + 4) / 10) * 10;
     v=(v-300)/10;
-    //v=Math.round(v+0.4);
     return v;
   });
-  const sum3=finals.reduce((a,b)=>a+b,0)-finals[rank.indexOf(0)];
-  finals[rank.indexOf(0)]-=sum3;
 
-  // ★自分で追加した↓
   let sum234 = 0;
   sum234 += finals[rank.indexOf(1)];
   sum234 += finals[rank.indexOf(2)];
   sum234 += finals[rank.indexOf(3)];
   finals[rank.indexOf(0)] = -sum234;
-  // ★自分で追加した↑
 
-  finals=finals.map((v,i)=>{
-    if(tobi[i]==='+10')v+=10;
-    if(tobi[i]==='-10')v-=10;
-    return v;
-  });
+  applyTobiFly(finals, rank);
 
   qsa('.final').forEach((td,i)=>{
     td.textContent=finals[i];
@@ -459,6 +485,34 @@ qs('#calcBtn').onclick=()=>{
 
   qs('#registerBtn').disabled = false;
 };
+
+function isTobiFlyMatched() {
+  const tobiCount = tobi.filter(v=>v).length;
+  const flyIdx = fly.findIndex(v=>v);
+  if ((tobiCount === 0) && (flyIdx === -1)) {
+    return true;
+  }
+  if ((tobiCount > 0) && (flyIx !== -1)) {
+    return true;
+  }
+  return false;
+}
+
+function applyTobiFly(finalScores, ranks){
+  const tobiCount = tobi.filter(v=>v).length;
+  const flyIdx = fly.findIndex(v=>v);
+
+  // トビ減点
+  for(let i=0;i<4;i++){
+    if (tobi[i]) finalScores[i] -= 10;
+  }
+
+  // 飛ばし加点
+  if (flyIdx !== -1) {
+    finalScores[flyIdx] += tobiCount * 10;
+  }
+}
+
 
 /* ========= 登録 ========= */
 qs('#registerBtn').onclick = async () => {
