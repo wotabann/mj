@@ -5,18 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>麻雀スコア</title>
 
-<!-- ★★★ 正しい jQuery ★★★ -->
+<!-- ★ 正しい jQuery CDN ★ -->
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
 <style>
 :root{
-  --dark:#0b3b2e;
-  --main:#145a43;
-  --soft:#e9f3ef;
-  --gold:#c9a24d;
-  --bg:#f4f7f6;
-  --panel:#ffffff;
-  --txt:#222;
+  --dark:#0b3b2e; --main:#145a43; --soft:#e9f3ef;
+  --gold:#c9a24d; --bg:#f4f7f6; --panel:#fff; --txt:#222;
 }
 body{margin:0;background:var(--bg);font-family:system-ui;color:var(--txt);}
 header{background:linear-gradient(135deg,var(--dark),var(--main));color:#fff;padding:12px;}
@@ -43,54 +38,32 @@ tr.active{background:#d7ebe4;}
 #show{background:#e0e6e3;}
 
 .keypad{
-  position:fixed;
-  right:0;
-  bottom:0;
-  width:70%;
-  max-width:420px;
-  background:#fff;
-  padding:12px;
-  border-top-left-radius:20px;
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:10px;
+  position:fixed;right:0;bottom:0;width:70%;max-width:420px;
+  background:#fff;padding:12px;border-top-left-radius:20px;
+  display:grid;grid-template-columns:repeat(4,1fr);gap:10px;
 }
 .keypad.hidden{display:none;}
 .keypad button{padding:16px;font-size:22px;border-radius:14px;border:none;}
 
 #toggleKeypad{
-  position:fixed;
-  right:14px;
-  bottom:14px;
-  width:56px;
-  height:56px;
-  border-radius:50%;
-  background:var(--main);
-  color:#fff;
-  border:none;
-  font-size:20px;
+  position:fixed;right:14px;bottom:14px;
+  width:56px;height:56px;border-radius:50%;
+  background:var(--main);color:#fff;border:none;font-size:20px;
 }
 
 #loading{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.4);
-  display:none;
-  justify-content:center;
-  align-items:center;
+  position:fixed;inset:0;background:rgba(0,0,0,.4);
+  display:none;justify-content:center;align-items:center;
 }
 #loading div{
-  width:48px;
-  height:48px;
-  border:6px solid #fff;
-  border-top-color:transparent;
-  border-radius:50%;
+  width:48px;height:48px;border:6px solid #fff;
+  border-top-color:transparent;border-radius:50%;
   animation:spin 1s linear infinite;
 }
 @keyframes spin{to{transform:rotate(360deg);}}
 
 #history{margin-top:16px;}
-.invalid{text-decoration:line-through;color:#999;}
+#history .invalid{text-decoration:line-through;color:#999;}
 </style>
 </head>
 
@@ -98,7 +71,7 @@ tr.active{background:#d7ebe4;}
 <header>🀄 MAHJONG SCORE</header>
 
 <main>
-<table>
+<table id="inputTable">
 <tr><th>名前</th><th>スコア</th><th>トビ</th><th>最終</th></tr>
 <tr data-i="0" class="active"><td>A</td><td><input class="score" readonly></td><td><button class="tobi"></button></td><td class="final"></td></tr>
 <tr data-i="1"><td>B</td><td><input class="score" readonly></td><td><button class="tobi"></button></td><td class="final"></td></tr>
@@ -140,7 +113,6 @@ function focusRow(i){
   $(`tr[data-i="${active}"]`).addClass('active');
   fresh[active]=true;
 }
-
 $('.score').on('click',function(){
   focusRow($(this).closest('tr').data('i'));
 });
@@ -200,17 +172,15 @@ $('.tobi').on('click',function(){
   $(this).text('').removeClass('minus');
 });
 
-/* 入力検証 */
+/* 検証 */
 function validate(){
   const raw=$('.score').map((i,e)=>$(e).val().trim()).get();
   if(raw.includes('')){ alert('未入力があります'); return null; }
   const nums=raw.map(Number);
-  if(nums.reduce((a,b)=>a+b,0)!==1000){
-    alert('合計は1000にしてください'); return null;
-  }
-  const p=$('.tobi').filter((i,e)=>$(e).text()==='+10').length;
-  const m=$('.tobi').filter((i,e)=>$(e).text()==='-10').length;
-  if(!((p===0&&m===0)||(p===1&&m===1))){
+  if(nums.reduce((a,b)=>a+b,0)!==1000){ alert('合計は1000にしてください'); return null; }
+  const plus=$('.tobi').filter((i,e)=>$(e).text()==='+10').length;
+  const minus=$('.tobi').filter((i,e)=>$(e).text()==='-10').length;
+  if(!((plus===0&&minus===0)||(plus===1&&minus===1))){
     alert('トビ設定が不正です'); return null;
   }
   return nums;
@@ -260,19 +230,19 @@ $('#reg').on('click',()=>{
 $('#show').on('click',()=>{
   $('#loading').show();
   $.getJSON(GAS_URL+'?action=list')
-  .done(res=>{
-    let html='<table><tr><th>No</th><th>日時</th><th>A</th><th>B</th><th>C</th><th>D</th><th>合計</th></tr>';
-    res.forEach(r=>{
-      html+=`<tr class="${r.invalid?'invalid':''}">
-        <td>${r.no}</td><td>${r.date}</td>
-        <td>${r.a}</td><td>${r.b}</td><td>${r.c}</td><td>${r.d}</td>
-        <td>${r.sum}</td></tr>`;
-    });
-    html+='</table>';
-    $('#history').html(html);
-  })
-  .fail(()=>alert('通信に失敗しました'))
-  .always(()=>$('#loading').hide());
+    .done(res=>{
+      let html='<table><tr><th>No</th><th>日時</th><th>A</th><th>B</th><th>C</th><th>D</th><th>合計</th></tr>';
+      res.forEach(r=>{
+        html+=`<tr class="${r.invalid?'invalid':''}">
+          <td>${r.no}</td><td>${r.date}</td>
+          <td>${r.a}</td><td>${r.b}</td><td>${r.c}</td><td>${r.d}</td>
+          <td>${r.sum}</td></tr>`;
+      });
+      html+='</table>';
+      $('#history').html(html);
+    })
+    .fail(()=>alert('通信に失敗しました'))
+    .always(()=>$('#loading').hide());
 });
 </script>
 </body>
