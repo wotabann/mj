@@ -187,7 +187,7 @@ header{
 
 
   <body>
-<header>麻雀 半荘スコア管理2</header>
+<header>麻雀 半荘スコア管理3</header>
 
 <div class="container">
 
@@ -447,7 +447,7 @@ qs('#registerBtn').onclick = async () => {
 
   try {
     showLoading(true);
-
+alert('aaa1');
     const res = await fetch(GAS_URL, {
       method: 'POST',
       headers: {
@@ -461,10 +461,13 @@ qs('#registerBtn').onclick = async () => {
         d: calculatedScores[3]
       })
     });
+alert('aaa2');
 
     if (!res.ok) throw new Error('network');
+alert('aaa3');
 
     const data = await res.json();
+alert('aaa4');
     renderHistory(data);
     resetAll();
     alert('登録しました');
