@@ -439,27 +439,41 @@ qs('#calcBtn').onclick=()=>{
 };
 
 /* ========= 登録 ========= */
-qs('#registerBtn').onclick=async()=>{
-  if(!calculatedScores) return;
-  if(!confirm('登録しますか？')) return;
-  try{
+qs('#registerBtn').onclick = async () => {
+  if (!calculatedScores) {
+    alert('先に計算してください');
+    return;
+  }
+  if (!confirm('登録しますか？')) return;
+
+  try {
     showLoading(true);
-    const res=await fetch(GAS_URL,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({action:'register',scores:calculatedScores})
+
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'register',
+        a: calculatedScores[0],
+        b: calculatedScores[1],
+        c: calculatedScores[2],
+        d: calculatedScores[3],
+      })
     });
-    if(!res.ok) throw '';
-    const data=await res.json();
+
+    if (!res.ok) throw new Error();
+
+    const data = await res.json();
     renderHistory(data);
     resetAll();
     alert('登録しました');
-  }catch{
+  } catch {
     alert('通信に失敗しました');
-  }finally{
+  } finally {
     showLoading(false);
   }
 };
+
 
 /* ========= 履歴 ========= */
 qs('#historyBtn').onclick=fetchHistory;
@@ -467,7 +481,7 @@ qs('#historyBtn').onclick=fetchHistory;
 async function fetchHistory(){
   try{
     showLoading(true);
-    const res=await fetch(GAS_URL+'?action=list');
+    const res = await fetch(GAS_URL);
     if(!res.ok) throw '';
     const data=await res.json();
     renderHistory(data);
@@ -478,27 +492,29 @@ async function fetchHistory(){
   }
 }
 
-function renderHistory(data){
+function renderHistory(data) {
   const tb = qs('#historyBody');
   tb.innerHTML = '';
 
-  let total = [0,0,0,0];
+  const total = [0, 0, 0, 0];
 
-  data.forEach(r=>{
+  data.forEach(r => {
     const tr = document.createElement('tr');
-    if(r.invalid) tr.classList.add('invalid');
+    if (r.invalid) tr.classList.add('invalid');
 
-    if(!r.invalid){
-      r.scores.forEach((v,i)=> total[i]+=v);
+    const scores = [r.a, r.b, r.c, r.d];
+
+    if (!r.invalid) {
+      scores.forEach((v, i) => total[i] += v);
     }
 
     tr.innerHTML = `
       <td>${r.no}</td>
-      <td>${r.date}</td>
-      <td>${r.scores[0]}</td>
-      <td>${r.scores[1]}</td>
-      <td>${r.scores[2]}</td>
-      <td>${r.scores[3]}</td>
+      <td>${r.datetime}</td>
+      <td>${r.a}</td>
+      <td>${r.b}</td>
+      <td>${r.c}</td>
+      <td>${r.d}</td>
       <td></td>
     `;
 
@@ -506,7 +522,7 @@ function renderHistory(data){
     tb.appendChild(tr);
   });
 
-  // === 合計行 ===
+  // === プレイヤー別 合計行 ===
   const tr = document.createElement('tr');
   tr.style.fontWeight = 'bold';
   tr.innerHTML = `
@@ -519,6 +535,7 @@ function renderHistory(data){
   `;
   tb.appendChild(tr);
 }
+
 
 async function toggleInvalid(no){
   if(!confirm('有効/無効を切り替えますか？')) return;
