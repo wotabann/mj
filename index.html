@@ -237,17 +237,43 @@ $('.tobi').on('click',function(){
 });
 
 /* 計算 */
-$('#calc').on('click',()=>{
-  let raw=$('.score').map((i,e)=>Number($(e).val())||0).get();
-  if(raw.filter(v=>v!==0).length<3){alert('未入力は1人まで');return;}
-  if(raw.includes(0)){
-    const s=raw.reduce((a,b)=>a+b,0);
-    const i=raw.indexOf(0);
-    raw[i]=1000-s;
-    $('.score').eq(i).val(raw[i]);
+$('#calc').on('click', () => {
+
+  // ① 入力取得（空欄は null）
+  let raw = $('.score').map((i,e)=>{
+    const v = $(e).val();
+    return v === '' ? null : Number(v);
+  }).get();
+
+  // ② 未入力人数チェック
+  const emptyIdx = raw
+    .map((v,i)=>v===null ? i : -1)
+    .filter(i=>i!==-1);
+
+  if (emptyIdx.length > 1) {
+    alert('未入力は1人までです');
+    return;
   }
-  if(raw.reduce((a,b)=>a+b,0)!==1000){
-    alert('合計は1000にしてください');return;
+
+  // ③ 未入力なし → 合計チェック
+  if (emptyIdx.length === 0) {
+    const total = raw.reduce((a,b)=>a+b,0);
+    if (total !== 1000) {
+      alert('合計は1000にしてください');
+      return;
+    }
+  }
+
+  // ④ 未入力1人 → 補完 → 合計チェック
+  if (emptyIdx.length === 1) {
+    const sum3 = raw.filter(v=>v!==null).reduce((a,b)=>a+b,0);
+    raw[emptyIdx[0]] = 1000 - sum3;
+    $('.score').eq(emptyIdx[0]).val(raw[emptyIdx[0]]);
+
+    if (raw.reduce((a,b)=>a+b,0) !== 1000) {
+      alert('合計は1000にしてください');
+      return;
+    }
   }
   const idx=[0,1,2,3].sort((a,b)=>raw[b]-raw[a]);
   let pt=[500,100,-100,-300];
