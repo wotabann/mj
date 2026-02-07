@@ -423,6 +423,14 @@ qs('#calcBtn').onclick=()=>{
   const sum3=finals.reduce((a,b)=>a+b,0)-finals[rank.indexOf(0)];
   finals[rank.indexOf(0)]-=sum3;
 
+  // ★自分で追加した↓
+  let sum234 = 0;
+  sum234 += finals[rank.indexOf(1)];
+  sum234 += finals[rank.indexOf(2)];
+  sum234 += finals[rank.indexOf(3)];
+  finals[rank.indexOf(0)]-=sum234;
+  // ★自分で追加した↑
+
   finals=finals.map((v,i)=>{
     if(tobi[i]==='+10')v+=10;
     if(tobi[i]==='-10')v-=10;
