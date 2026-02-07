@@ -455,7 +455,7 @@ qs('#registerBtn').onclick = async () => {
     params.append('b', calculatedScores[1]);
     params.append('c', calculatedScores[2]);
     params.append('d', calculatedScores[3]);
-
+    alert('aa');
     const res = await fetch(GAS_URL, {
       method: 'POST',
       body: params
