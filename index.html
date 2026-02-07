@@ -187,7 +187,7 @@ header{
 
 
   <body>
-<header>MJ Score</header>
+<header>MJ Score!</header>
 
 <div class="container">
 
@@ -428,7 +428,7 @@ qs('#calcBtn').onclick=()=>{
   sum234 += finals[rank.indexOf(1)];
   sum234 += finals[rank.indexOf(2)];
   sum234 += finals[rank.indexOf(3)];
-  finals[rank.indexOf(0)]-=sum234;
+  finals[rank.indexOf(0)] = -sum234;
   // ★自分で追加した↑
 
   finals=finals.map((v,i)=>{
