@@ -131,7 +131,22 @@ button:disabled {
 
 .history tr.invalid{
   text-decoration:line-through;
-  color:#999;
+  color:#999; !important
+}
+
+/* 履歴スコア色分け */
+.score-plus {
+  color: #2e7d32;   /* 深めの緑（Mリーグ寄り） */
+  font-weight: 600;
+}
+
+.score-minus {
+  color: #c62828;   /* 落ち着いた赤 */
+  font-weight: 600;
+}
+
+.score-zero {
+  color: #555;
 }
 
 /* 電卓 */
@@ -601,6 +616,15 @@ function renderHistory(data) {
       scores.forEach((v, i) => total[i] += v);
     }
 
+    let innerHTML = ``;
+    innerHTML += `<td>${r.no}</td>`;
+    innerHTML += `<td>${r.datetime}</td>`;
+    for(let i=0;i<4;i++){
+      const v = scores[i];
+      const cls = v > 0 ? 'score-plus' : v < 0 ? 'score-minus' : 'score-zero';
+      innerHTML += `<td class="${cls}">${v}</td>`;
+    }
+
     tr.innerHTML = `
       <td>${r.no}</td>
       <td>${r.datetime}</td>
@@ -609,6 +633,8 @@ function renderHistory(data) {
       <td>${r.c}</td>
       <td>${r.d}</td>
     `;
+
+    tr.innerHTML = innerHTML;
 
     tr.onclick = () => toggleInvalid(r.no);
     tb.appendChild(tr);
