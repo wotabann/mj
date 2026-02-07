@@ -625,6 +625,7 @@ function renderHistory(data) {
 
   // 合計の計算
   data.forEach(r => {
+    const scores = [r.a, r.b, r.c, r.d];
     if (!r.invalid) {
       scores.forEach((v, i) => total[i] += v);
     }
