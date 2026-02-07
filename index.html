@@ -623,6 +623,13 @@ function renderHistory(data) {
 
   const total = [0, 0, 0, 0];
 
+  // 合計の計算
+  data.forEach(r => {
+    if (!r.invalid) {
+      scores.forEach((v, i) => total[i] += v);
+    }
+  });
+
   // === プレイヤー別 合計行 ===
   const trsum = document.createElement('tr');
   trsum.style.fontWeight = 'bold';
