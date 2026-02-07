@@ -449,17 +449,18 @@ qs('#registerBtn').onclick = async () => {
   try {
     showLoading(true);
 
+    const params = new URLSearchParams();
+    params.append('action', 'register');
+    params.append('a', calculatedScores[0]);
+    params.append('b', calculatedScores[1]);
+    params.append('c', calculatedScores[2]);
+    params.append('d', calculatedScores[3]);
+
     const res = await fetch(GAS_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'register',
-        a: calculatedScores[0],
-        b: calculatedScores[1],
-        c: calculatedScores[2],
-        d: calculatedScores[3],
-      })
+      body: params
     });
+    
 
     if (!res.ok) throw new Error();
 
