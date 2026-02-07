@@ -630,7 +630,12 @@ function renderHistory(data) {
     for(let i=0;i<4;i++){
       const v = scores[i];
       const cls = v > 0 ? 'score-plus' : v < 0 ? 'score-minus' : 'score-zero';
-      innerHTML += `<td class="${cls}">${v}</td>`;
+      if (r.invalid) {
+        innerHTML += `<td>${v}</td>`;
+      }
+      else {
+        innerHTML += `<td class="${cls}">${v}</td>`;
+      }
     }
 
     tr.innerHTML = `
