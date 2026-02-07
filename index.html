@@ -57,7 +57,7 @@ header{
 }
 
 .input-table tr.focused {
-  background: #e6f5ee; /* 薄い緑 */
+  background: #FFFFA7; /* 薄い黄色 */
 }
 
 .score-input{
@@ -665,7 +665,8 @@ async function postToGAS(payload){
 /* ========= リセット ========= */
 function resetAll(){
   qsa('.score-input').forEach(i=>i.value='');
-  qsa('.tobi-btn').forEach(b=>{b.textContent='';b.className='tobi-btn';});
+  qsa('.tobi-btn').forEach(b=>{b.className='tobi-btn';});
+  qsa('.fly-btn').forEach(b=>{b.className='fly-btn';});
   qsa('.final').forEach(td=>td.textContent='');
   calculatedScores=null;
   // Aを再フォーカス
