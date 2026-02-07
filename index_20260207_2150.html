@@ -1,0 +1,614 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>MJスコア</title>
+
+<style>
+:root{
+  --green:#0f3d2e;
+  --green-light:#1e6b50;
+  --table-bg:#f6f7f8;
+  --border-blue:#c7d8ee;
+  --text:#222;
+  --plus:#2e8b57;
+  --minus:#c0392b;
+}
+
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:#eef2ef;
+  color:var(--text);
+}
+
+header{
+  background:var(--green);
+  color:#fff;
+  padding:12px;
+  text-align:center;
+  font-weight:bold;
+  letter-spacing:1px;
+}
+
+.container{
+  padding:10px;
+}
+
+/* 入力テーブル */
+.input-table{
+  width:100%;
+  border-collapse:collapse;
+  background:var(--table-bg);
+  margin-bottom:10px;
+}
+
+.input-table th,
+.input-table td{
+  border:1px solid #ccc;
+  padding:6px;
+  text-align:center;
+}
+
+.input-table th{
+  background:#e3e8e5;
+}
+
+.input-table tr.focused {
+  background: #e6f5ee; /* 薄い緑 */
+}
+
+.score-input{
+  width:80px;
+  font-size:18px;
+  text-align:right;
+  background:#fff;
+}
+
+/* トビボタン */
+.tobi-btn{
+  width:60px;
+  padding:6px 0;
+  border-radius:6px;
+  border:none;
+  background:#ddd;
+  font-weight:bold;
+}
+
+.tobi-plus{ background:#e6f5ee;color:var(--plus);}
+.tobi-minus{ background:#fdecea;color:var(--minus);}
+
+/* 操作ボタン */
+.actions{
+  display:flex;
+  gap:8px;
+  margin-bottom:10px;
+}
+
+.actions button{
+  flex:1;
+  padding:10px;
+  font-size:16px;
+  border:none;
+  border-radius:8px;
+  background:var(--green-light);
+  color:#fff;
+}
+
+button:disabled {
+  background-color: #b0b0b0; /* グレー */
+  color: #666;
+  border-color: #999;
+  cursor: not-allowed;
+  opacity: 1; /* 透明にしすぎない */
+}
+
+/* 履歴 */
+.history{
+  margin-top:15px;
+}
+
+.history table{
+  width:100%;
+  border-collapse:collapse;
+  background:#fff;
+}
+
+.history th,
+.history td{
+  border:1px solid var(--border-blue);
+  padding:6px;
+  font-size:13px;
+}
+
+.history tr.invalid{
+  text-decoration:line-through;
+  color:#999;
+}
+
+/* 電卓 */
+.calculator{
+  position:fixed;
+  right:10px;
+  bottom:10px;
+  width:70%;
+  max-width:260px;
+  background:#fff;
+  border-radius:12px;
+  box-shadow:0 4px 12px rgba(0,0,0,.2);
+  padding:8px;
+}
+
+.calc-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:6px;
+}
+
+.calc-btn{
+  padding:14px 0;
+  font-size:18px;
+  border:none;
+  border-radius:8px;
+  background:#f0f0f0;
+}
+
+.calc-btn.op{
+  background:var(--green-light);
+  color:#fff;
+}
+
+.calc-btn.close{
+  background:#ccc;
+}
+
+.calc-toggle{
+  position:fixed;
+  right:14px;
+  bottom:14px;
+  width:56px;
+  height:56px;
+  border-radius:50%;
+  background:var(--green);
+  color:#fff;
+  font-size:18px;
+  display:none;
+  align-items:center;
+  justify-content:center;
+}
+
+/* ローディング */
+.loading{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.4);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  color:#fff;
+  font-size:18px;
+}
+</style>
+</head>
+
+
+  <body>
+<header>MJ Score! テストページ</header>
+
+<div class="container">
+
+<table class="input-table">
+  <tr>
+    <th>名前</th>
+    <th>スコア</th>
+    <th>トビ賞</th>
+    <th>最終点</th>
+  </tr>
+  <tbody id="inputRows">
+    <tr data-idx="0">
+      <td>A</td>
+      <td><input class="score-input" readonly></td>
+      <td><button class="tobi-btn"></button></td>
+      <td class="final"></td>
+    </tr>
+    <tr data-idx="1">
+      <td>B</td>
+      <td><input class="score-input" readonly></td>
+      <td><button class="tobi-btn"></button></td>
+      <td class="final"></td>
+    </tr>
+    <tr data-idx="2">
+      <td>C</td>
+      <td><input class="score-input" readonly></td>
+      <td><button class="tobi-btn"></button></td>
+      <td class="final"></td>
+    </tr>
+    <tr data-idx="3">
+      <td>D</td>
+      <td><input class="score-input" readonly></td>
+      <td><button class="tobi-btn"></button></td>
+      <td class="final"></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="actions">
+  <button id="calcBtn">計算</button>
+  <button id="registerBtn">登録</button>
+  <button id="historyBtn">履歴</button>
+</div>
+
+<div class="history">
+  <table>
+    <thead>
+      <tr>
+        <th>No</th><th>日時</th>
+        <th>A</th><th>B</th><th>C</th><th>D</th>
+      </tr>
+    </thead>
+    <tbody id="historyBody"></tbody>
+  </table>
+</div>
+
+</div>
+
+<!-- 電卓 -->
+<div class="calculator" id="calculator">
+  <div class="calc-grid">
+    <button class="calc-btn">7</button>
+    <button class="calc-btn">8</button>
+    <button class="calc-btn">9</button>
+    <button class="calc-btn op" id="btnUp">↑</button>
+
+    <button class="calc-btn">4</button>
+    <button class="calc-btn">5</button>
+    <button class="calc-btn">6</button>
+    <button class="calc-btn op" id="btnDown">↓</button>
+
+    <button class="calc-btn">1</button>
+    <button class="calc-btn">2</button>
+    <button class="calc-btn">3</button>
+    <button class="calc-btn op" id="btnSign">±</button>
+
+    <button class="calc-btn" id="btnClear">C</button>
+    <button class="calc-btn">0</button>
+    <button class="calc-btn op" id="btnFill">補</button>
+    <button class="calc-btn close" id="btnClose">×</button>
+  </div>
+</div>
+
+<div class="calc-toggle" id="calcToggle">電</div>
+
+<div class="loading" id="loading">通信中…</div>
+
+
+<script>
+/* ========= 設定 ========= */
+const GAS_URL = 'https://script.google.com/macros/s/AKfycby1XFM-wXWJKnuSnLXpuUGhT6dE-bmrgFwVI_V5XVzLlHTnsFr0TiVRGRfNlqK38z_a/exec';
+
+/* ========= 状態 ========= */
+let focusedInput = null;
+let needClear = false;
+let calculatedScores = null;
+
+/* ========= 共通 ========= */
+const qs = s => document.querySelector(s);
+const qsa = s => [...document.querySelectorAll(s)];
+
+function showLoading(flg){
+  qs('#loading').style.display = flg ? 'flex' : 'none';
+}
+
+/* ========= フォーカス ========= */
+qsa('.score-input').forEach(inp=>{
+  inp.addEventListener('focus',()=>{
+    focusedInput = inp;
+    needClear = true;
+    qsa('.input-table tr').forEach(tr=>tr.classList.remove('focused'));
+    inp.closest('tr').classList.add('focused');
+  });
+});
+
+/* ========= 電卓入力 ========= */
+function applyInput(val){
+  if(!focusedInput) return;
+  if(needClear){
+    focusedInput.value = '';
+    needClear = false;
+  }
+  focusedInput.value += val;
+}
+
+qsa('.calc-btn').forEach(btn=>{
+  if(/^\d$/.test(btn.textContent)){
+    btn.onclick=()=>applyInput(btn.textContent);
+    qs('#registerBtn').disabled = true;
+  }
+});
+
+/* ± */
+qs('#btnSign').onclick=()=>{
+  if(!focusedInput) return;
+  if(needClear){
+    focusedInput.value='';
+    needClear=false;
+  }
+  focusedInput.value =
+    focusedInput.value.startsWith('-')
+    ? focusedInput.value.slice(1)
+    : '-' + focusedInput.value;
+  qs('#registerBtn').disabled = true;
+};
+
+/* C */
+qs('#btnClear').onclick=()=>{
+  if(focusedInput) focusedInput.value='';
+  qs('#registerBtn').disabled = true;
+};
+
+/* ↑↓ */
+qs('#btnUp').onclick=()=>moveFocus(-1);
+qs('#btnDown').onclick=()=>moveFocus(1);
+
+function moveFocus(d){
+  const inputs=qsa('.score-input');
+  let i=inputs.indexOf(focusedInput);
+  if(i<0) return;
+  i=(i+d+4)%4;
+  inputs[i].focus();
+}
+
+/* 電卓表示切替 */
+qs('#btnClose').onclick=()=>{
+  qs('#calculator').style.display='none';
+  qs('#calcToggle').style.display='flex';
+};
+qs('#calcToggle').onclick=()=>{
+  qs('#calculator').style.display='block';
+  qs('#calcToggle').style.display='none';
+};
+
+/* ========= トビ ========= */
+qsa('.tobi-btn').forEach(btn=>{
+  btn.onclick=()=>{
+    if(btn.classList.contains('tobi-plus')){
+      btn.className='tobi-btn tobi-minus';
+      btn.textContent='-10';
+    }else if(btn.classList.contains('tobi-minus')){
+      btn.className='tobi-btn';
+      btn.textContent='';
+    }else{
+      btn.className='tobi-btn tobi-plus';
+      btn.textContent='+10';
+    }
+    qs('#registerBtn').disabled = true;
+  };
+});
+
+/* ========= 補完 ========= */
+qs('#btnFill').onclick=()=>{
+  const inputs=qsa('.score-input');
+  const empty=inputs.filter(i=>i.value==='');
+  if(empty.length!==1){
+    alert('空欄が1人のときのみ補完できます');
+    return;
+  }
+  const sum=inputs.reduce((a,i)=>a+(i.value===''?0:+i.value),0);
+  empty[0].value=1000-sum;
+};
+
+/* ========= 計算 ========= */
+qs('#calcBtn').onclick=()=>{
+  const inputs=qsa('.score-input');
+  const scores=inputs.map(i=>i.value===''?null:+i.value);
+  if(scores.filter(v=>v===null).length>=2){
+    calculatedScores = null;
+    alert('未入力は1人までです');
+    return;
+  }
+  const total=scores.reduce((a,b)=>a+b,0);
+  if(total!==1000){
+    calculatedScores = null;
+    alert('合計は1000にしてください');
+    return;
+  }
+
+  const tobi=qsa('.tobi-btn').map(b=>b.textContent);
+  const plus=tobi.filter(t=>t==='+10').length;
+  const minus=tobi.filter(t=>t==='-10').length;
+  if(!((plus===0&&minus===0)||(plus===1&&minus===1))){
+    calculatedScores = null;
+    alert('トビ設定が不正です');
+    return;
+  }
+
+  const sorted=[...scores].sort((a,b)=>b-a);
+  const rank=scores.map(s=>sorted.indexOf(s));
+  let finals=scores.map((s,i)=>{
+    let v=s+[500,100,-100,-300][rank[i]];
+    v = Math.floor((v + 4) / 10) * 10;
+    v=(v-300)/10;
+    //v=Math.round(v+0.4);
+    return v;
+  });
+  const sum3=finals.reduce((a,b)=>a+b,0)-finals[rank.indexOf(0)];
+  finals[rank.indexOf(0)]-=sum3;
+
+  // ★自分で追加した↓
+  let sum234 = 0;
+  sum234 += finals[rank.indexOf(1)];
+  sum234 += finals[rank.indexOf(2)];
+  sum234 += finals[rank.indexOf(3)];
+  finals[rank.indexOf(0)] = -sum234;
+  // ★自分で追加した↑
+
+  finals=finals.map((v,i)=>{
+    if(tobi[i]==='+10')v+=10;
+    if(tobi[i]==='-10')v-=10;
+    return v;
+  });
+
+  qsa('.final').forEach((td,i)=>{
+    td.textContent=finals[i];
+    td.style.color=finals[i]>0?'green':finals[i]<0?'red':'';
+  });
+
+  calculatedScores=finals;
+
+  qs('#registerBtn').disabled = false;
+};
+
+/* ========= 登録 ========= */
+qs('#registerBtn').onclick = async () => {
+  if (!calculatedScores) {
+    alert('先に計算してください');
+    return;
+  }
+  if (!confirm('登録しますか？')) return;
+
+  try {
+    showLoading(true);
+
+    const data = await postToGAS({
+      action: 'register',
+      a: calculatedScores[0],
+      b: calculatedScores[1],
+      c: calculatedScores[2],
+      d: calculatedScores[3]
+    });
+
+    renderHistory(data);
+    resetAll();
+    alert('登録しました');
+
+  } catch (e) {
+    console.error(e);
+    alert('通信に失敗しました');
+  } finally {
+    showLoading(false);
+  }
+};
+
+
+
+
+/* ========= 履歴 ========= */
+qs('#historyBtn').onclick=fetchHistory;
+
+async function fetchHistory(){
+  try{
+    showLoading(true);
+    const res = await fetch(GAS_URL);
+    if(!res.ok) throw '';
+    const data=await res.json();
+    renderHistory(data);
+  }catch{
+    alert('通信に失敗しました');
+  }finally{
+    showLoading(false);
+  }
+}
+
+function renderHistory(data) {
+  const tb = qs('#historyBody');
+  tb.innerHTML = '';
+
+  const total = [0, 0, 0, 0];
+
+  data.forEach(r => {
+    const tr = document.createElement('tr');
+    if (r.invalid) tr.classList.add('invalid');
+
+    const scores = [r.a, r.b, r.c, r.d];
+
+    if (!r.invalid) {
+      scores.forEach((v, i) => total[i] += v);
+    }
+
+    tr.innerHTML = `
+      <td>${r.no}</td>
+      <td>${r.datetime}</td>
+      <td>${r.a}</td>
+      <td>${r.b}</td>
+      <td>${r.c}</td>
+      <td>${r.d}</td>
+    `;
+
+    tr.onclick = () => toggleInvalid(r.no);
+    tb.appendChild(tr);
+  });
+
+  // === プレイヤー別 合計行 ===
+  const tr = document.createElement('tr');
+  tr.style.fontWeight = 'bold';
+  tr.innerHTML = `
+    <td colspan="2">合計</td>
+    <td>${total[0]}</td>
+    <td>${total[1]}</td>
+    <td>${total[2]}</td>
+    <td>${total[3]}</td>
+  `;
+  tb.appendChild(tr);
+}
+
+
+async function toggleInvalid(no){
+  if(!confirm('有効/無効を切り替えますか？')) return;
+
+  try{
+    showLoading(true);
+
+    const data = await postToGAS({
+      action: 'toggle',
+      no: no
+    });
+  
+    renderHistory(data);
+
+  }catch(e){
+    console.error(e);
+    alert('通信に失敗しました');
+  }finally{
+    showLoading(false);
+  }
+}
+
+async function postToGAS(payload){
+  const res = await fetch(GAS_URL, {
+    method: 'POST',
+    body: JSON.stringify(payload) // ★ headers は書かない
+  });
+
+  const text = await res.text();
+  return JSON.parse(text);
+}
+
+
+
+
+/* ========= リセット ========= */
+function resetAll(){
+  qsa('.score-input').forEach(i=>i.value='');
+  qsa('.tobi-btn').forEach(b=>{b.textContent='';b.className='tobi-btn';});
+  qsa('.final').forEach(td=>td.textContent='');
+  calculatedScores=null;
+  // Aを再フォーカス
+  const first = qsa('.score-input')[0];
+  if (first) first.focus();
+
+  qs('#registerBtn').disabled = true;
+}
+
+// 初期フォーカス（プレイヤーA）
+window.addEventListener('load', () => {
+  const first = qsa('.score-input')[0];
+  if (first) first.focus();
+
+  qs('#registerBtn').disabled = true;
+});
+</script>
+</body>
+</html>
