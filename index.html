@@ -7,7 +7,6 @@
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
 <style>
-/* ===== THEME ===== */
 :root{
   --dark:#0b3b2e;
   --main:#145a43;
@@ -17,11 +16,6 @@
   --panel:#ffffff;
   --txt:#222;
 }
-body.dark{
-  --bg:#0f1f1b;
-  --panel:#162a25;
-  --txt:#e6ecea;
-}
 
 body{
   margin:0;
@@ -30,29 +24,18 @@ body{
   font-family:system-ui;
 }
 
-/* ===== HEADER ===== */
 header{
   background:linear-gradient(135deg,var(--dark),var(--main));
   color:#fff;
   padding:12px 16px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-header button{
-  background:none;
-  border:1px solid #fff;
-  color:#fff;
-  border-radius:20px;
-  padding:4px 10px;
 }
 
-/* ===== MAIN ===== */
 main{
   padding:12px;
   padding-bottom:320px;
 }
 
+/* ===== 入力テーブル ===== */
 table{
   width:100%;
   border-collapse:collapse;
@@ -93,6 +76,7 @@ tr.active{
 .final.plus{color:#1e8e3e;}
 .final.minus{color:#c62828;}
 
+/* ===== ボタン ===== */
 .actions{
   margin-top:12px;
   display:flex;
@@ -109,7 +93,7 @@ tr.active{
 #reg{background:var(--gold);}
 #show{background:#e0e6e3;}
 
-/* ===== KEYPAD ===== */
+/* ===== 電卓 ===== */
 .keypad{
   position:fixed;
   right:0;
@@ -131,7 +115,8 @@ tr.active{
 }
 .keypad.hidden{display:none;}
 
-#showKeypad{
+/* 電／× 共通丸ボタン */
+#toggleKeypad{
   position:fixed;
   right:14px;
   bottom:14px;
@@ -141,10 +126,11 @@ tr.active{
   background:var(--main);
   color:#fff;
   border:none;
-  font-size:18px;
+  font-size:20px;
+  display:none;
 }
 
-/* ===== LOADING ===== */
+/* ===== ローディング ===== */
 #loading{
   position:fixed;
   inset:0;
@@ -167,10 +153,7 @@ tr.active{
 
 <body>
 
-<header>
-  <div>🀄 MAHJONG SCORE</div>
-  <button id="mode">Dark</button>
-</header>
+<header>🀄 MAHJONG SCORE</header>
 
 <main>
 <table>
@@ -190,15 +173,15 @@ tr.active{
 <div id="history"></div>
 </main>
 
-<!-- ===== KEYPAD ===== -->
-<div class="keypad">
+<!-- 電卓 -->
+<div class="keypad" id="keypad">
   <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button data-k="up">↑</button>
   <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button><button data-k="down">↓</button>
   <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button data-k="pm">±</button>
-  <button data-k="clear">C</button><button data-k="0">0</button><button data-k="close">×</button>
+  <button data-k="clear">C</button><button data-k="0">0</button>
 </div>
 
-<button id="showKeypad">電</button>
+<button id="toggleKeypad">×</button>
 <div id="loading"><div></div></div>
 
 <script>
@@ -208,12 +191,7 @@ let activeIndex = 0;
 let isFresh = [true,true,true,true];
 let lastScore = null;
 
-/* ===== MODE ===== */
-$('#mode').on('click',()=>{
-  $('body').toggleClass('dark');
-});
-
-/* ===== FOCUS ===== */
+/* ===== フォーカス ===== */
 function focusRow(i){
   activeIndex = Math.max(0,Math.min(3,i));
   $('tr').removeClass('active');
@@ -225,15 +203,21 @@ $('.score').on('click',function(){
   focusRow($(this).closest('tr').data('i'));
 });
 
-/* ===== KEYPAD ===== */
+/* ===== 電卓トグル ===== */
+$('#toggleKeypad').on('click',()=>{
+  $('#keypad').toggleClass('hidden');
+  $('#toggleKeypad').text($('#keypad').hasClass('hidden') ? '電' : '×');
+});
+
+/* ===== 電卓入力 ===== */
 $('.keypad button').on('click',function(){
-  const k = $(this).data('k');
-  const input = $('.score').eq(activeIndex);
+  const k=$(this).data('k');
+  const input=$('.score').eq(activeIndex);
 
   if(['0','1','2','3','4','5','6','7','8','9','pm'].includes(k)){
     if(isFresh[activeIndex]){
       input.val('');
-      isFresh[activeIndex] = false;
+      isFresh[activeIndex]=false;
     }
   }
 
@@ -241,58 +225,52 @@ $('.keypad button').on('click',function(){
   if(k==='down') return focusRow(activeIndex+1);
   if(k==='clear'){ input.val(''); isFresh[activeIndex]=true; return; }
   if(k==='pm'){
-    const v = input.val();
+    const v=input.val();
     if(!v) return;
-    input.val(v.startsWith('-') ? v.slice(1) : '-'+v);
-    return;
-  }
-  if(k==='close'){
-    $('.keypad').addClass('hidden');
-    $('#showKeypad').show();
+    input.val(v.startsWith('-')?v.slice(1):'-'+v);
     return;
   }
 
-  input.val((input.val()||'') + k);
+  input.val((input.val()||'')+k);
 });
 
-$('#showKeypad').on('click',()=>{
-  $('.keypad').removeClass('hidden');
-  $('#showKeypad').hide();
-});
-
-/* ===== TOBI ===== */
+/* ===== トビ ===== */
 $('.tobi').on('click',function(){
   if($(this).text()===''){ $(this).text('+10').addClass('plus'); return; }
   if($(this).text()==='+10'){ $(this).text('-10').removeClass('plus').addClass('minus'); return; }
   $(this).text('').removeClass('minus');
 });
 
-/* ===== CALC ===== */
+/* ===== 計算 ===== */
 $('#calc').on('click',()=>{
-  let raw = $('.score').map((i,e)=>{
+  let raw=$('.score').map((i,e)=>{
     const v=$(e).val();
-    return v==='' ? null : Number(v);
+    return v===''?null:Number(v);
   }).get();
 
   const emptyIdx = raw.map((v,i)=>v===null?i:null).filter(v=>v!==null);
+
+  // ① 空欄2以上
   if(emptyIdx.length>1){
     alert('未入力は1人までです');
     return;
   }
 
+  // ② 補完
   if(emptyIdx.length===1){
-    const idx = emptyIdx[0];
-    const sum3 = raw.reduce((a,b)=>a+(b??0),0);
-    raw[idx] = 1000 - sum3;
+    const idx=emptyIdx[0];
+    const sum3=raw.reduce((a,b)=>a+(b??0),0);
+    raw[idx]=1000-sum3;
     $('.score').eq(idx).val(raw[idx]);
   }
 
-  const total = raw.reduce((a,b)=>a+b,0);
-  if(total!==1000){
+  // ③ 合計チェック
+  if(raw.reduce((a,b)=>a+b,0)!==1000){
     alert('合計は1000にしてください');
     return;
   }
 
+  // ④ トビ整合性
   const plus=$('.tobi').filter((i,e)=>$(e).text()==='+10').length;
   const minus=$('.tobi').filter((i,e)=>$(e).text()==='-10').length;
   if(!((plus===0&&minus===0)||(plus===1&&minus===1))){
@@ -300,6 +278,7 @@ $('#calc').on('click',()=>{
     return;
   }
 
+  // ⑤ 最終計算
   const order=[0,1,2,3].sort((a,b)=>raw[b]-raw[a]);
   const uma=[500,100,-100,-300];
   let sc=raw.map((v,i)=>Math.round((v+uma[order.indexOf(i)]-300)/10));
@@ -315,6 +294,7 @@ $('#calc').on('click',()=>{
     $(e).text(sc[i]).removeClass('plus minus')
       .addClass(sc[i]>=0?'plus':'minus');
   });
+
   $('#reg').prop('disabled',false);
 });
 </script>
