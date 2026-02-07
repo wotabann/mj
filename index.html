@@ -33,7 +33,6 @@ header{
   padding:12px;
   display:flex;
   justify-content:space-between;
-  align-items:center;
 }
 main{padding:12px;padding-bottom:320px;}
 
@@ -55,6 +54,7 @@ tr.active{background:#d7ebe4;}
   border-radius:8px;
   border:1px solid #aaa;
 }
+
 .tobi{
   width:54px;
   border-radius:20px;
@@ -63,10 +63,15 @@ tr.active{background:#d7ebe4;}
 }
 .tobi.plus{background:#c9f2d8;}
 .tobi.minus{background:#f6caca;}
+
 .final.plus{color:#1e8e3e;}
 .final.minus{color:#c62828;}
 
-.actions{margin-top:12px;display:flex;gap:10px;}
+.actions{
+  margin-top:12px;
+  display:flex;
+  gap:10px;
+}
 .actions button{
   flex:1;
   padding:12px;
@@ -110,7 +115,8 @@ tr.active{background:#d7ebe4;}
 }
 
 #loading{
-  position:fixed;inset:0;
+  position:fixed;
+  inset:0;
   background:rgba(0,0,0,.4);
   display:none;
   justify-content:center;
@@ -126,6 +132,7 @@ tr.active{background:#d7ebe4;}
 }
 @keyframes spin{to{transform:rotate(360deg);}}
 
+/* 履歴 */
 .score-table{
   margin-top:16px;
   width:100%;
@@ -135,11 +142,14 @@ tr.active{background:#d7ebe4;}
 .score-table th,.score-table td{
   border:1px solid #c9d7e3;
   padding:6px;
-  text-align:center;
 }
 .score-table tr.invalid{
   text-decoration:line-through;
   color:#999;
+}
+.score-table tr.total{
+  background:#eef6ff;
+  font-weight:bold;
 }
 </style>
 </head>
@@ -182,37 +192,43 @@ tr.active{background:#d7ebe4;}
 <script>
 const GAS_URL = 'https://script.google.com/macros/s/AKfycby1XFM-wXWJKnuSnLXpuUGhT6dE-bmrgFwVI_V5XVzLlHTnsFr0TiVRGRfNlqK38z_a/exec';
 
-let cur=0,fresh=[1,1,1,1],lastScore=null;
+letigenous = 0;
+let cur = 0;
+let lastScore = null;
 
 /* フォーカス */
 function focus(i){
-  cur=Math.max(0,Math.min(3,i));
+  cur = Math.max(0, Math.min(3, i));
   $('tr').removeClass('active');
   $(`tr[data-i="${cur}"]`).addClass('active');
+  $('.score').eq(cur).val('');
 }
+
+/* スコア欄タップ */
 $('.score').on('click',function(){
   focus($(this).closest('tr').data('i'));
-  fresh[cur]=1;
 });
 
 /* 電卓 */
 $('.keypad button').on('click',function(){
-  const k=$(this).data('k');
-  const inp=$('.score').eq(cur);
+  const k = $(this).data('k');
+  const inp = $('.score').eq(cur);
 
-  if(k==='up')return focus(cur-1);
-  if(k==='down')return focus(cur+1);
-  if(k==='close'){ $('.keypad').addClass('hidden');$('#showKeypad').show();return;}
-  if(k==='clear'){inp.val('');fresh[cur]=1;return;}
+  if(k==='up') return focus(cur-1);
+  if(k==='down') return focus(cur+1);
+  if(k==='close'){ $('.keypad').addClass('hidden'); $('#showKeypad').show(); return; }
+  if(k==='clear'){ inp.val(''); return; }
+
   if(k==='pm'){
-    const v=inp.val();
-    if(!v)return;
-    inp.val(v.startsWith('-')?v.slice(1):'-'+v);
+    const v = inp.val();
+    if(!v) return;
+    inp.val(v.startsWith('-') ? v.slice(1) : '-' + v);
     return;
   }
-  if(fresh[cur]){inp.val('');fresh[cur]=0;}
-  inp.val((inp.val()||'')+k);
+
+  inp.val((inp.val() || '') + k);
 });
+
 $('#showKeypad').on('click',()=>{
   $('.keypad').removeClass('hidden');
   $('#showKeypad').hide();
@@ -220,58 +236,60 @@ $('#showKeypad').on('click',()=>{
 
 /* トビ */
 $('.tobi').on('click',function(){
-  if($(this).text()===''){ $(this).text('+10').addClass('plus'); return;}
-  if($(this).text()==='+10'){ $(this).text('-10').removeClass('plus').addClass('minus'); return;}
+  if($(this).text()===''){ $(this).text('+10').addClass('plus'); return; }
+  if($(this).text()==='+10'){ $(this).text('-10').removeClass('plus').addClass('minus'); return; }
   $(this).text('').removeClass('minus');
 });
 
 /* 計算 */
 $('#calc').on('click',()=>{
-  let raw=$('.score').map((i,e)=>{
-    const v=$(e).val();
-    return v===''?null:Number(v);
+  let raw = $('.score').map((i,e)=>{
+    const v = $(e).val();
+    return v === '' ? null : Number(v);
   }).get();
 
-  const empty=raw.filter(v=>v===null).length;
-  if(empty>1){alert('未入力は1人までです');return;}
+  const emptyIdx = raw.map((v,i)=>v===null?i:-1).filter(i=>i!==-1);
+  if(emptyIdx.length > 1){ alert('未入力は1人までです'); return; }
 
-  if(empty===1){
-    const idx=raw.indexOf(null);
-    raw[idx]=1000-raw.filter(v=>v!==null).reduce((a,b)=>a+b,0);
+  if(emptyIdx.length === 1){
+    const idx = emptyIdx[0];
+    const sum3 = raw.filter(v=>v!==null).reduce((a,b)=>a+b,0);
+    raw[idx] = 1000 - sum3;
     $('.score').eq(idx).val(raw[idx]);
   }
 
-  if(raw.reduce((a,b)=>a+b,0)!==1000){
-    alert('合計は1000にしてください');return;
+  if(raw.reduce((a,b)=>a+b,0) !== 1000){
+    alert('合計は1000にしてください'); return;
   }
 
-  const plus=$('.tobi').filter((i,e)=>$(e).text()==='+10').length;
-  const minus=$('.tobi').filter((i,e)=>$(e).text()==='-10').length;
+  const plus = $('.tobi').filter((i,e)=>$(e).text()==='+10').length;
+  const minus = $('.tobi').filter((i,e)=>$(e).text()==='-10').length;
   if(!((plus===0&&minus===0)||(plus===1&&minus===1))){
-    alert('トビ設定が不正です');return;
+    alert('トビ設定が不正です'); return;
   }
 
   const order=[0,1,2,3].sort((a,b)=>raw[b]-raw[a]);
   const uma=[500,100,-100,-300];
-  let sc=raw.map((v,i)=>Math.round((v+uma[order.indexOf(i)]-300)/10));
-  sc[order[0]]-=sc.reduce((a,b)=>a+b,0);
+  let sc = raw.map((v,i)=>Math.round((v+uma[order.indexOf(i)]-300)/10));
+  sc[order[0]] -= sc.reduce((a,b)=>a+b,0);
 
   $('.tobi').each((i,e)=>{
-    if($(e).text()==='+10')sc[i]+=10;
-    if($(e).text()==='-10')sc[i]-=10;
+    if($(e).text()==='+10') sc[i]+=10;
+    if($(e).text()==='-10') sc[i]-=10;
   });
 
-  lastScore=sc;
+  lastScore = sc;
   $('.final').each((i,e)=>{
     $(e).text(sc[i]).removeClass('plus minus')
       .addClass(sc[i]>=0?'plus':'minus');
   });
+
   $('#reg').prop('disabled',false);
 });
 
 /* 登録 */
 $('#reg').on('click',()=>{
-  if(!confirm('登録しますか？'))return;
+  if(!confirm('登録しますか？')) return;
   $('#loading').show();
   fetch(GAS_URL,{
     method:'POST',
@@ -284,31 +302,43 @@ $('#reg').on('click',()=>{
 });
 
 /* 履歴 */
-$('#show').on('click',()=>{
+function loadHistory(){
   $('#loading').show();
-  fetch(GAS_URL)
-    .then(r=>r.json())
-    .then(data=>{
-      $('#loading').hide();
-      let html='<table class="score-table"><tr><th>日時</th><th>A</th><th>B</th><th>C</th><th>D</th></tr>';
-      data.forEach(d=>{
-        html+=`
+  fetch(GAS_URL).then(r=>r.json()).then(data=>{
+    $('#loading').hide();
+
+    let sum=[0,0,0,0];
+    let html='<table class="score-table"><tr><th>日時</th><th>A</th><th>B</th><th>C</th><th>D</th></tr>';
+
+    data.forEach(d=>{
+      if(d.valid){
+        d.score.forEach((v,i)=>sum[i]+=v);
+      }
+      html+=`
         <tr class="${d.valid?'':'invalid'}" data-row="${d.row}">
           <td>${new Date(d.time).toLocaleString()}</td>
           ${d.score.map(s=>`<td>${s}</td>`).join('')}
         </tr>`;
-      });
-      html+='</table>';
-      $('#scoreArea').html(html);
-
-      $('.score-table tr[data-row]').on('click',function(){
-        const row=$(this).data('row');
-        if(confirm('有効／無効を切り替えますか？')){
-          fetch(GAS_URL+'?toggle='+row).then(()=>$('#show').click());
-        }
-      });
     });
-});
+
+    html+=`
+      <tr class="total">
+        <td>合計</td>
+        ${sum.map(s=>`<td>${s}</td>`).join('')}
+      </tr></table>`;
+
+    $('#scoreArea').html(html);
+
+    $('.score-table tr[data-row]').on('click',function(){
+      const row=$(this).data('row');
+      if(confirm('有効／無効を切り替えますか？')){
+        fetch(GAS_URL+'?toggle='+row).then(loadHistory);
+      }
+    });
+  });
+}
+
+$('#show').on('click',loadHistory);
 </script>
 
 </body>
