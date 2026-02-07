@@ -8,180 +8,114 @@
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
 <style>
-/* ===============================
-   カラーパレット（Mリーグ意識）
-================================ */
 :root {
   --green-dark:#0b3b2e;
   --green-main:#145a43;
   --green-soft:#e6f2ee;
   --gold:#c9a24d;
-
   --bg:#f4f7f6;
   --panel:#ffffff;
   --text:#222;
-  --muted:#666;
 }
-
 body.dark {
   --bg:#0f1f1b;
   --panel:#162a25;
   --text:#e5ece9;
-  --muted:#aabdb6;
 }
 
-/* ===============================
-   ベース
-================================ */
 body {
   margin:0;
   background:var(--bg);
   color:var(--text);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont;
+  font-family:system-ui;
 }
 
+/* ===== ヘッダー ===== */
 header {
   background:linear-gradient(135deg,var(--green-dark),var(--green-main));
   color:#fff;
-  padding:12px 14px;
+  padding:12px;
   display:flex;
   justify-content:space-between;
   align-items:center;
 }
 
-header .title {
-  font-weight:700;
-  letter-spacing:1px;
-}
+/* ===== テーブル ===== */
+main { padding:12px; padding-bottom:280px; }
 
-header button {
-  background:rgba(255,255,255,0.15);
-  color:#fff;
-  border:none;
-  border-radius:20px;
-  padding:6px 12px;
-}
-
-/* ===============================
-   レイアウト
-================================ */
-main {
-  padding:12px;
-  padding-bottom:280px; /* テンキー分 */
-}
-
-/* ===============================
-   入力テーブル
-================================ */
 .input-table {
   width:100%;
   border-collapse:collapse;
   background:var(--panel);
   border-radius:14px;
   overflow:hidden;
-  box-shadow:0 6px 16px rgba(0,0,0,0.08);
 }
-
 .input-table th {
   background:var(--green-soft);
-  color:var(--green-dark);
   padding:8px;
-  font-size:13px;
 }
-
 .input-table td {
-  padding:10px 6px;
+  padding:8px;
   text-align:center;
-  border-top:1px solid #dde5e2;
+  border-top:1px solid #ddd;
 }
-
-.input-table tr.active {
-  background:#d7ebe4;
-}
+.input-table tr.active { background:#d7ebe4; }
 
 .score {
   width:72px;
   font-size:20px;
   text-align:right;
-  background:#fff;
-  border:1px solid #b5c7c0;
   border-radius:8px;
-  padding:4px 6px;
+  border:1px solid #aaa;
 }
-
-.final.plus { color:#1e8e3e; font-weight:600; }
-.final.minus { color:#c62828; font-weight:600; }
 
 .tobi {
   width:54px;
   border-radius:20px;
-  font-weight:700;
   border:none;
+  font-weight:700;
 }
-.tobi.plus { background:#c9f2d8; color:#0b3b2e; }
-.tobi.minus { background:#f6caca; color:#6a0000; }
+.tobi.plus { background:#c9f2d8; }
+.tobi.minus { background:#f6caca; }
 
-/* ===============================
-   操作ボタン
-================================ */
+.final.plus { color:#1e8e3e; }
+.final.minus { color:#c62828; }
+
+/* ===== ボタン ===== */
 .actions {
-  margin-top:14px;
+  margin-top:12px;
   display:flex;
   gap:10px;
 }
-
 .actions button {
   flex:1;
   border:none;
   border-radius:30px;
   padding:12px;
   font-size:16px;
-  font-weight:600;
 }
-
 #calc { background:var(--green-main); color:#fff; }
-#reg  { background:var(--gold); color:#222; }
+#reg  { background:var(--gold); }
 #show { background:#e0e6e3; }
 
-/* ===============================
-   スコア表示
-================================ */
+/* ===== 履歴 ===== */
 .score-table {
   margin-top:14px;
   width:100%;
   border-collapse:collapse;
   background:#fff;
-  border-radius:14px;
-  overflow:hidden;
 }
-
-.score-table th,
-.score-table td {
+.score-table th, .score-table td {
   border:1px solid #c9d7e3;
   padding:6px;
   text-align:center;
-  font-size:13px;
-  color:#222;
 }
-
-.score-table th {
-  background:#f3f8fc;
-}
-
 .score-table tr.invalid {
   text-decoration:line-through;
   color:#999;
-  background:#f5f5f5;
 }
 
-.score-table tr.total {
-  font-weight:700;
-  background:#eef6ff;
-}
-
-/* ===============================
-   テンキー（完全電卓配置）
-================================ */
+/* ===== 電卓 ===== */
 .keypad {
   position:fixed;
   bottom:0;
@@ -190,55 +124,69 @@ main {
   max-width:420px;
   background:var(--panel);
   border-top-left-radius:20px;
-  box-shadow:-4px 0 16px rgba(0,0,0,0.2);
   padding:12px;
   display:grid;
   grid-template-columns:repeat(4,1fr);
   grid-template-areas:
     "up down minus clear"
-    "n7 n8 n9 ."
-    "n4 n5 n6 ."
-    "n1 n2 n3 ."
-    ".  n0 n0 .";
+    "n7 n8 n9 close"
+    "n4 n5 n6 close"
+    "n1 n2 n3 close"
+    ".  n0 n0 close";
   gap:10px;
 }
-
 .keypad button {
   font-size:22px;
-  padding:16px 0;
+  padding:16px;
   border:none;
   border-radius:14px;
-  background:#fff;
-  box-shadow:0 3px 0 #aaa;
 }
 
-.keypad button:active {
-  transform:translateY(2px);
-  box-shadow:0 1px 0 #aaa;
+[data-k="close"] { grid-area:close; background:#ddd; }
+
+.keypad.hidden { display:none; }
+
+/* ===== 電卓復帰ボタン ===== */
+#showKeypad {
+  position:fixed;
+  right:12px;
+  bottom:12px;
+  border:none;
+  border-radius:50%;
+  width:56px;
+  height:56px;
+  font-size:20px;
+  background:var(--green-main);
+  color:#fff;
+  display:none;
 }
 
-[data-k="up"]    { grid-area:up; }
-[data-k="down"]  { grid-area:down; }
-[data-k="-"]     { grid-area:minus; }
-[data-k="clear"] { grid-area:clear; background:#ffd6d6; }
-
-[data-k="7"] { grid-area:n7; }
-[data-k="8"] { grid-area:n8; }
-[data-k="9"] { grid-area:n9; }
-[data-k="4"] { grid-area:n4; }
-[data-k="5"] { grid-area:n5; }
-[data-k="6"] { grid-area:n6; }
-[data-k="1"] { grid-area:n1; }
-[data-k="2"] { grid-area:n2; }
-[data-k="3"] { grid-area:n3; }
-[data-k="0"] { grid-area:n0; }
+/* ===== ローディング ===== */
+#loading {
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.4);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  z-index:999;
+}
+#loading div {
+  width:48px;
+  height:48px;
+  border:6px solid #fff;
+  border-top-color:transparent;
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+}
+@keyframes spin { to { transform:rotate(360deg); } }
 </style>
 </head>
 
 <body>
 
 <header>
-  <div class="title">🀄 MAHJONG SCORE</div>
+  <div>🀄 MAHJONG SCORE</div>
   <button id="mode">Dark</button>
 </header>
 
@@ -266,46 +214,48 @@ main {
 <button data-k="-">−</button>
 <button data-k="clear">C</button>
 
-<button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
+<button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button data-k="close">×</button>
 <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
 <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
 <button data-k="0">0</button>
 </div>
 
+<button id="showKeypad">電</button>
+
+<div id="loading"><div></div></div>
+
 <script>
-const GAS_URL = 'https://script.google.com/macros/s/AKfycby1XFM-wXWJKnuSnLXpuUGhT6dE-bmrgFwVI_V5XVzLlHTnsFr0TiVRGRfNlqK38z_a/exec';
+const GAS_URL='https://script.google.com/macros/s/AKfycby1XFM-wXWJKnuSnLXpuUGhT6dE-bmrgFwVI_V5XVzLlHTnsFr0TiVRGRfNlqK38z_a/exec';
+let cur=0,fresh=[1,1,1,1],lastScore=null;
 
-let cur=0,fresh=[1,1,1,1],round=1,lastScore=null;
-
-/* ダークモード */
-$('#mode').on('click',()=>{
-  $('body').toggleClass('dark');
-});
-
-/* フォーカス */
 function focus(i){
   cur=Math.max(0,Math.min(3,i));
   fresh[cur]=1;
-  $('tr[data-idx]').removeClass('active');
+  $('tr').removeClass('active');
   $(`tr[data-idx="${cur}"]`).addClass('active');
 }
 
-/* テンキー */
 $('.keypad button').on('click',function(){
   const k=$(this).data('k');
   const inp=$('.score').eq(cur);
   if(k==='up')return focus(cur-1);
   if(k==='down')return focus(cur+1);
   if(k==='clear'){inp.val('');fresh[cur]=1;return;}
+  if(k==='close'){ $('.keypad').addClass('hidden'); $('#showKeypad').show(); return;}
   if(fresh[cur]){inp.val('');fresh[cur]=0;}
   inp.val((inp.val()||'')+k);
 });
 
-/* トビ */
+$('#showKeypad').on('click',()=>{
+  $('.keypad').removeClass('hidden');
+  $('#showKeypad').hide();
+});
+
+/* トビ独立トグル */
 $('.tobi').on('click',function(){
   const t=$(this).text();
-  $('.tobi').text('').removeClass('plus minus');
-  if(!t)$(this).text('+10').addClass('plus');
+  $(this).removeClass('plus minus').text('');
+  if(t==='')$(this).text('+10').addClass('plus');
   else if(t==='+10')$(this).text('-10').addClass('minus');
 });
 
@@ -319,17 +269,10 @@ $('#calc').on('click',()=>{
   const empty=raw.filter(v=>v===null).length;
   if(empty>1){alert('未入力は1人までです');return;}
 
-  if(empty===0){
-    if(raw.reduce((a,b)=>a+b,0)!==1000){
-      alert('合計は1000にしてください');return;
-    }
-  }
-
   if(empty===1){
     const sum3=raw.filter(v=>v!==null).reduce((a,b)=>a+b,0);
-    const i=raw.indexOf(null);
-    raw[i]=1000-sum3;
-    $('.score').eq(i).val(raw[i]);
+    raw[raw.indexOf(null)]=1000-sum3;
+    $('.score').eq(raw.indexOf(null)).val(1000-sum3);
   }
 
   if(raw.reduce((a,b)=>a+b,0)!==1000){
@@ -351,42 +294,31 @@ $('#calc').on('click',()=>{
     $(e).text(sc[i]).removeClass('plus minus')
       .addClass(sc[i]>=0?'plus':'minus');
   });
-
   $('#reg').prop('disabled',false);
 });
 
 /* 登録 */
 $('#reg').on('click',()=>{
   if(!confirm('登録しますか？'))return;
-  fetch(GAS_URL,{
-    method:'POST',
-    body:JSON.stringify({round,score:lastScore})
-  }).then(()=>{
-    alert('登録しました');
-    location.reload();
-  });
+  $('#loading').show();
+  fetch(GAS_URL,{method:'POST',body:JSON.stringify({score:lastScore})})
+    .then(()=>{alert('登録しました');location.reload();});
 });
 
 /* 履歴 */
 $('#show').on('click',()=>{
+  $('#loading').show();
   fetch(GAS_URL).then(r=>r.json()).then(data=>{
-    let sum=[0,0,0,0];
+    $('#loading').hide();
     let h='<table class="score-table"><tr><th>日時</th><th>A</th><th>B</th><th>C</th><th>D</th></tr>';
     data.forEach(d=>{
-      if(d.valid)d.score.forEach((v,i)=>sum[i]+=v);
       h+=`<tr class="${d.valid?'':'invalid'}" data-row="${d.row}">
         <td>${new Date(d.time).toLocaleString()}</td>
         ${d.score.map(s=>`<td>${s}</td>`).join('')}
       </tr>`;
     });
-    h+=`<tr class="total"><td>合計</td>${sum.map(s=>`<td>${s}</td>`).join('')}</tr></table>`;
+    h+='</table>';
     $('#scoreArea').html(h);
-
-    $('.score-table tr[data-row]').on('click',function(){
-      if(confirm($(this).hasClass('invalid')?'有効に戻しますか？':'無効にしますか？')){
-        fetch(GAS_URL+'?toggle='+$(this).data('row')).then(()=>$('#show').click());
-      }
-    });
   });
 });
 </script>
