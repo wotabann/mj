@@ -2,302 +2,148 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>麻雀スコア</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MAHJONG SCORE</title>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
 <style>
-:root{
-  --dark:#0b3b2e;
-  --main:#145a43;
-  --soft:#e9f3ef;
-  --gold:#c9a24d;
-  --bg:#f4f7f6;
-  --panel:#ffffff;
-  --txt:#222;
-}
-
-body{
-  margin:0;
-  background:var(--bg);
-  color:var(--txt);
-  font-family:system-ui;
-}
-
-header{
-  background:linear-gradient(135deg,var(--dark),var(--main));
-  color:#fff;
-  padding:12px 16px;
-}
-
-main{
-  padding:12px;
-  padding-bottom:320px;
-}
-
-/* ===== 入力テーブル ===== */
-table{
-  width:100%;
-  border-collapse:collapse;
-  background:var(--panel);
-  border-radius:14px;
-  overflow:hidden;
-}
-th{
-  background:var(--soft);
-  padding:8px;
-}
-td{
-  padding:8px;
-  text-align:center;
-  border-top:1px solid #ddd;
-}
-tr.active{
-  background:#d7ebe4;
-}
-
-.score{
-  width:80px;
-  font-size:20px;
-  text-align:right;
-  border-radius:8px;
-  border:1px solid #aaa;
-}
-
-.tobi{
-  width:56px;
-  border-radius:20px;
-  border:none;
-  font-weight:bold;
-}
-.tobi.plus{background:#c9f2d8;}
-.tobi.minus{background:#f6caca;}
-
-.final.plus{color:#1e8e3e;}
-.final.minus{color:#c62828;}
-
-/* ===== ボタン ===== */
-.actions{
-  margin-top:12px;
-  display:flex;
-  gap:10px;
-}
-.actions button{
-  flex:1;
-  padding:12px;
-  border:none;
-  border-radius:30px;
-  font-size:16px;
-}
-#calc{background:var(--main);color:#fff;}
-#reg{background:var(--gold);}
-#show{background:#e0e6e3;}
-
-/* ===== 電卓 ===== */
-.keypad{
-  position:fixed;
-  right:0;
-  bottom:0;
-  width:70%;
-  max-width:420px;
-  background:var(--panel);
-  padding:12px;
-  border-top-left-radius:20px;
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:10px;
-}
-.keypad button{
-  font-size:22px;
-  padding:16px;
-  border:none;
-  border-radius:14px;
-}
-.keypad.hidden{display:none;}
-
-/* 電／× 共通丸ボタン */
-#toggleKeypad{
-  position:fixed;
-  right:14px;
-  bottom:14px;
-  width:56px;
-  height:56px;
-  border-radius:50%;
-  background:var(--main);
-  color:#fff;
-  border:none;
-  font-size:20px;
-  display:none;
-}
-
-/* ===== ローディング ===== */
-#loading{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.4);
-  display:none;
-  justify-content:center;
-  align-items:center;
-  z-index:999;
-}
-#loading div{
-  width:48px;height:48px;
-  border:6px solid #fff;
-  border-top-color:transparent;
-  border-radius:50%;
-  animation:spin 1s linear infinite;
-}
-@keyframes spin{to{transform:rotate(360deg);}}
+body{font-family:sans-serif;background:#f5f7f6;margin:0}
+header{background:#0f4d3c;color:#fff;padding:12px;font-weight:bold}
+table{width:100%;border-collapse:collapse;margin-top:10px}
+th,td{border:1px solid #ccc;padding:6px;text-align:center}
+.pos{color:#2ecc71;font-weight:bold}
+.neg{color:#e74c3c;font-weight:bold}
+.focus{outline:3px solid #0f4d3c}
+.btn{padding:10px;margin:4px;border-radius:20px;border:none}
+.calc{background:#0f4d3c;color:#fff}
+.reg{background:#caa44a;color:#fff}
+.hist{background:#ccc}
+#calcBox{position:fixed;bottom:0;right:0;width:70%;background:#eee;padding:10px}
+.calcKey{width:23%;padding:15px;margin:1%;font-size:18px}
+#toggleCalc{position:fixed;bottom:10px;left:10px;background:#0f4d3c;color:#fff;border-radius:50%;padding:15px}
+#loading{display:none;position:fixed;top:0;left:0;right:0;bottom:0;
+background:rgba(0,0,0,.4);color:#fff;font-size:30px;
+align-items:center;justify-content:center}
+.invalid{text-decoration:line-through;opacity:.5}
 </style>
 </head>
 
 <body>
 
-<header>🀄 MAHJONG SCORE</header>
+<header>MAHJONG SCORE</header>
 
-<main>
 <table>
 <tr><th>名前</th><th>スコア</th><th>トビ</th><th>最終</th></tr>
-<tr data-i="0" class="active"><td>A</td><td><input class="score" readonly></td><td><button class="tobi"></button></td><td class="final"></td></tr>
-<tr data-i="1"><td>B</td><td><input class="score" readonly></td><td><button class="tobi"></button></td><td class="final"></td></tr>
-<tr data-i="2"><td>C</td><td><input class="score" readonly></td><td><button class="tobi"></button></td><td class="final"></td></tr>
-<tr data-i="3"><td>D</td><td><input class="score" readonly></td><td><button class="tobi"></button></td><td class="final"></td></tr>
+<tr data-i="0"><td>A</td><td><input></td><td class="tobi"></td><td class="final"></td></tr>
+<tr data-i="1"><td>B</td><td><input></td><td class="tobi"></td><td class="final"></td></tr>
+<tr data-i="2"><td>C</td><td><input></td><td class="tobi"></td><td class="final"></td></tr>
+<tr data-i="3"><td>D</td><td><input></td><td class="tobi"></td><td class="final"></td></tr>
 </table>
 
-<div class="actions">
-  <button id="calc">計算</button>
-  <button id="reg" disabled>登録</button>
-  <button id="show">履歴</button>
-</div>
+<button class="btn calc">計算</button>
+<button class="btn reg">登録</button>
+<button class="btn hist">履歴</button>
 
-<div id="history"></div>
-</main>
+<table id="history"></table>
 
-<!-- 電卓 -->
-<div class="keypad" id="keypad">
-  <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button data-k="up">↑</button>
-  <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button><button data-k="down">↓</button>
-  <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button data-k="pm">±</button>
-  <button data-k="clear">C</button><button data-k="0">0</button>
-</div>
+<div id="calcBox"></div>
+<button id="toggleCalc">×</button>
 
-<button id="toggleKeypad">×</button>
-<div id="loading"><div></div></div>
+<div id="loading">ぐるぐる…</div>
 
 <script>
-const GAS_URL = 'https://script.google.com/macros/s/AKfycby1XFM-wXWJKnuSnLXpuUGhT6dE-bmrgFwVI_V5XVzLlHTnsFr0TiVRGRfNlqK38z_a/exec';
+const GAS_URL = '★★ここにGASのURL★★';
 
-let activeIndex = 0;
-let isFresh = [true,true,true,true];
-let lastScore = null;
+let focus = 0;
+let clearNext = false;
 
-/* ===== フォーカス ===== */
-function focusRow(i){
-  activeIndex = Math.max(0,Math.min(3,i));
-  $('tr').removeClass('active');
-  $(`tr[data-i="${activeIndex}"]`).addClass('active');
-  isFresh[activeIndex] = true;
+$('input').on('focus',function(){
+  $('input').removeClass('focus');
+  $(this).addClass('focus');
+  focus = $(this).closest('tr').data('i');
+  clearNext = true;
+});
+
+function keypad(){
+  const k = ['7','8','9','↑','4','5','6','↓','1','2','3','±','C','0','×'];
+  $('#calcBox').html(k.map(v=>`<button class="calcKey">${v}</button>`));
+}
+keypad();
+
+$(document).on('click','.calcKey',function(){
+  let v = $(this).text();
+  let $i = $('input').eq(focus);
+  let val = $i.val();
+
+  if(clearNext && !['↑','↓'].includes(v)){ val=''; clearNext=false; }
+
+  if(v==='↑') focus=Math.max(0,focus-1);
+  else if(v==='↓') focus=Math.min(3,focus+1);
+  else if(v==='C') val='';
+  else if(v==='±') val = val ? -Number(val) : '-';
+  else if(v==='×'){ $('#calcBox').toggle(); $('#toggleCalc').text($('#calcBox').is(':visible')?'×':'電'); return;}
+  else val += v;
+
+  $('input').eq(focus).focus().val(val);
+});
+
+$('.calc').click(calcScore);
+
+function calcScore(){
+  let s = $('input').map((i,e)=>$(e).val()).get();
+  let empty = s.filter(v=>v==='').length;
+  if(empty>=2) return alert('空欄が多すぎます');
+
+  if(empty===1){
+    let sum = s.reduce((a,b)=>a+(b===''?0:Number(b)),0);
+    $('input').eq(s.indexOf('')).val(1000-sum);
+    s = $('input').map((i,e)=>$(e).val()).get();
+  }
+
+  if(s.reduce((a,b)=>a+Number(b),0)!=1000) return alert('合計が1000ではありません');
+
+  let arr = s.map((v,i)=>({i, v:Number(v)})).sort((a,b)=>b.v-a.v);
+  let base=[500,100,-100,-300];
+  let tmp=[];
+  arr.forEach((o,rank)=>{
+    tmp[o.i]=(o.v+base[rank]-300)/10;
+  });
+  tmp[arr[0].i]=-(tmp.reduce((a,b)=>a+b,0)-tmp[arr[0].i]);
+
+  tmp.forEach((v,i)=>{
+    $('.final').eq(i).text(v).addClass(v>=0?'pos':'neg');
+  });
 }
 
-$('.score').on('click',function(){
-  focusRow($(this).closest('tr').data('i'));
+$('.reg').click(()=>{
+  if(!confirm('登録しますか？'))return;
+  $('#loading').show();
+  const f = $('.final').map((i,e)=>$(e).text()).get();
+  $.getJSON(GAS_URL,{action:'add',a:f[0],b:f[1],c:f[2],d:f[3]})
+   .done(drawHist).fail(()=>alert('異常')).always(()=>$('#loading').hide());
 });
 
-/* ===== 電卓トグル ===== */
-$('#toggleKeypad').on('click',()=>{
-  $('#keypad').toggleClass('hidden');
-  $('#toggleKeypad').text($('#keypad').hasClass('hidden') ? '電' : '×');
+$('.hist').click(()=>{
+  $('#loading').show();
+  $.getJSON(GAS_URL,{action:'list'})
+   .done(drawHist).fail(()=>alert('異常')).always(()=>$('#loading').hide());
 });
 
-/* ===== 電卓入力 ===== */
-$('.keypad button').on('click',function(){
-  const k=$(this).data('k');
-  const input=$('.score').eq(activeIndex);
-
-  if(['0','1','2','3','4','5','6','7','8','9','pm'].includes(k)){
-    if(isFresh[activeIndex]){
-      input.val('');
-      isFresh[activeIndex]=false;
-    }
-  }
-
-  if(k==='up') return focusRow(activeIndex-1);
-  if(k==='down') return focusRow(activeIndex+1);
-  if(k==='clear'){ input.val(''); isFresh[activeIndex]=true; return; }
-  if(k==='pm'){
-    const v=input.val();
-    if(!v) return;
-    input.val(v.startsWith('-')?v.slice(1):'-'+v);
-    return;
-  }
-
-  input.val((input.val()||'')+k);
-});
-
-/* ===== トビ ===== */
-$('.tobi').on('click',function(){
-  if($(this).text()===''){ $(this).text('+10').addClass('plus'); return; }
-  if($(this).text()==='+10'){ $(this).text('-10').removeClass('plus').addClass('minus'); return; }
-  $(this).text('').removeClass('minus');
-});
-
-/* ===== 計算 ===== */
-$('#calc').on('click',()=>{
-  let raw=$('.score').map((i,e)=>{
-    const v=$(e).val();
-    return v===''?null:Number(v);
-  }).get();
-
-  const emptyIdx = raw.map((v,i)=>v===null?i:null).filter(v=>v!==null);
-
-  // ① 空欄2以上
-  if(emptyIdx.length>1){
-    alert('未入力は1人までです');
-    return;
-  }
-
-  // ② 補完
-  if(emptyIdx.length===1){
-    const idx=emptyIdx[0];
-    const sum3=raw.reduce((a,b)=>a+(b??0),0);
-    raw[idx]=1000-sum3;
-    $('.score').eq(idx).val(raw[idx]);
-  }
-
-  // ③ 合計チェック
-  if(raw.reduce((a,b)=>a+b,0)!==1000){
-    alert('合計は1000にしてください');
-    return;
-  }
-
-  // ④ トビ整合性
-  const plus=$('.tobi').filter((i,e)=>$(e).text()==='+10').length;
-  const minus=$('.tobi').filter((i,e)=>$(e).text()==='-10').length;
-  if(!((plus===0&&minus===0)||(plus===1&&minus===1))){
-    alert('トビ設定が不正です');
-    return;
-  }
-
-  // ⑤ 最終計算
-  const order=[0,1,2,3].sort((a,b)=>raw[b]-raw[a]);
-  const uma=[500,100,-100,-300];
-  let sc=raw.map((v,i)=>Math.round((v+uma[order.indexOf(i)]-300)/10));
-  sc[order[0]]-=sc.reduce((a,b)=>a+b,0);
-
-  $('.tobi').each((i,e)=>{
-    if($(e).text()==='+10') sc[i]+=10;
-    if($(e).text()==='-10') sc[i]-=10;
+function drawHist(res){
+  let h='<tr><th>日時</th><th>A</th><th>B</th><th>C</th><th>D</th></tr>';
+  res.data.forEach((r,i)=>{
+    h+=`<tr data-row="${i+2}" class="${r[6]?'' :'invalid'}">
+    <td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td></tr>`;
   });
+  $('#history').html(h);
+}
 
-  lastScore=sc;
-  $('.final').each((i,e)=>{
-    $(e).text(sc[i]).removeClass('plus minus')
-      .addClass(sc[i]>=0?'plus':'minus');
-  });
-
-  $('#reg').prop('disabled',false);
+$('#history').on('click','tr',function(){
+  if(!confirm('有効/無効を切り替えますか？'))return;
+  $('#loading').show();
+  $.getJSON(GAS_URL,{action:'toggle',row:$(this).data('row')})
+   .done(drawHist).always(()=>$('#loading').hide());
 });
 </script>
-
 </body>
 </html>
