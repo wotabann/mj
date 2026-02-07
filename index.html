@@ -63,6 +63,12 @@ header{
   background:#fff;
 }
 
+/* フォーカス行ハイライト */
+.input-table tr.focused {
+  background: #e6f5ee; /* 薄い緑 */
+}
+
+
 /* トビボタン */
 .tobi-btn{
   width:60px;
@@ -295,6 +301,10 @@ qsa('.score-input').forEach(inp=>{
   inp.addEventListener('focus',()=>{
     focusedInput = inp;
     needClear = true;
+
+  // 行ハイライト切替
+  qsa('.input-table tr').forEach(tr=>tr.classList.remove('focused'));
+  inp.closest('tr').classList.add('focused');
   });
 });
 
@@ -513,7 +523,16 @@ function resetAll(){
   qsa('.tobi-btn').forEach(b=>{b.textContent='';b.className='tobi-btn';});
   qsa('.final').forEach(td=>td.textContent='');
   calculatedScores=null;
+  // Aを再フォーカス
+const first = qsa('.score-input')[0];
+if (first) first.focus();
 }
+
+// 初期フォーカス（プレイヤーA）
+window.addEventListener('load', () => {
+  const first = qsa('.score-input')[0];
+  if (first) first.focus();
+});
 </script>
 </body>
 </html>
