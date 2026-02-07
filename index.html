@@ -4,182 +4,143 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>麻雀スコア</title>
-
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
 <style>
-:root {
-  --green-dark:#0b3b2e;
-  --green-main:#145a43;
-  --green-soft:#e6f2ee;
+:root{
+  --g-dark:#0b3b2e;
+  --g-main:#145a43;
+  --g-soft:#e6f2ee;
   --gold:#c9a24d;
   --bg:#f4f7f6;
-  --panel:#ffffff;
-  --text:#222;
+  --panel:#fff;
+  --txt:#222;
 }
-body.dark {
+body.dark{
   --bg:#0f1f1b;
   --panel:#162a25;
-  --text:#e5ece9;
+  --txt:#e5ece9;
 }
-
-body {
+body{
   margin:0;
   background:var(--bg);
-  color:var(--text);
+  color:var(--txt);
   font-family:system-ui;
 }
-
-/* ===== ヘッダー ===== */
-header {
-  background:linear-gradient(135deg,var(--green-dark),var(--green-main));
+header{
+  background:linear-gradient(135deg,var(--g-dark),var(--g-main));
   color:#fff;
   padding:12px;
   display:flex;
   justify-content:space-between;
   align-items:center;
 }
+main{padding:12px;padding-bottom:320px;}
 
-/* ===== テーブル ===== */
-main { padding:12px; padding-bottom:280px; }
-
-.input-table {
+table{
   width:100%;
   border-collapse:collapse;
   background:var(--panel);
   border-radius:14px;
   overflow:hidden;
 }
-.input-table th {
-  background:var(--green-soft);
-  padding:8px;
-}
-.input-table td {
-  padding:8px;
-  text-align:center;
-  border-top:1px solid #ddd;
-}
-.input-table tr.active { background:#d7ebe4; }
+th{background:var(--g-soft);padding:8px;}
+td{padding:8px;text-align:center;border-top:1px solid #ddd;}
+tr.active{background:#d7ebe4;}
 
-.score {
+.score{
   width:72px;
   font-size:20px;
   text-align:right;
   border-radius:8px;
   border:1px solid #aaa;
 }
-
-.tobi {
+.tobi{
   width:54px;
   border-radius:20px;
   border:none;
-  font-weight:700;
+  font-weight:bold;
 }
-.tobi.plus { background:#c9f2d8; }
-.tobi.minus { background:#f6caca; }
+.tobi.plus{background:#c9f2d8;}
+.tobi.minus{background:#f6caca;}
+.final.plus{color:#1e8e3e;}
+.final.minus{color:#c62828;}
 
-.final.plus { color:#1e8e3e; }
-.final.minus { color:#c62828; }
-
-/* ===== ボタン ===== */
-.actions {
-  margin-top:12px;
-  display:flex;
-  gap:10px;
-}
-.actions button {
+.actions{margin-top:12px;display:flex;gap:10px;}
+.actions button{
   flex:1;
+  padding:12px;
   border:none;
   border-radius:30px;
-  padding:12px;
   font-size:16px;
 }
-#calc { background:var(--green-main); color:#fff; }
-#reg  { background:var(--gold); }
-#show { background:#e0e6e3; }
+#calc{background:var(--g-main);color:#fff;}
+#reg{background:var(--gold);}
+#show{background:#e0e6e3;}
 
-/* ===== 履歴 ===== */
-.score-table {
-  margin-top:14px;
-  width:100%;
-  border-collapse:collapse;
-  background:#fff;
-}
-.score-table th, .score-table td {
-  border:1px solid #c9d7e3;
-  padding:6px;
-  text-align:center;
-}
-.score-table tr.invalid {
-  text-decoration:line-through;
-  color:#999;
-}
-
-/* ===== 電卓 ===== */
-.keypad {
+.keypad{
   position:fixed;
-  bottom:0;
-  right:0;
+  right:0;bottom:0;
   width:70%;
   max-width:420px;
   background:var(--panel);
-  border-top-left-radius:20px;
   padding:12px;
+  border-top-left-radius:20px;
   display:grid;
   grid-template-columns:repeat(4,1fr);
-  grid-template-areas:
-    "up down minus clear"
-    "n7 n8 n9 close"
-    "n4 n5 n6 close"
-    "n1 n2 n3 close"
-    ".  n0 n0 close";
   gap:10px;
 }
-.keypad button {
+.keypad button{
   font-size:22px;
   padding:16px;
   border:none;
   border-radius:14px;
 }
+.keypad.hidden{display:none;}
 
-[data-k="close"] { grid-area:close; background:#ddd; }
-
-.keypad.hidden { display:none; }
-
-/* ===== 電卓復帰ボタン ===== */
-#showKeypad {
+#showKeypad{
   position:fixed;
-  right:12px;
-  bottom:12px;
-  border:none;
+  right:12px;bottom:12px;
+  width:56px;height:56px;
   border-radius:50%;
-  width:56px;
-  height:56px;
-  font-size:20px;
-  background:var(--green-main);
+  background:var(--g-main);
   color:#fff;
+  border:none;
   display:none;
 }
 
-/* ===== ローディング ===== */
-#loading {
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.4);
+#loading{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.4);
   display:none;
   justify-content:center;
   align-items:center;
   z-index:999;
 }
-#loading div {
-  width:48px;
-  height:48px;
+#loading div{
+  width:48px;height:48px;
   border:6px solid #fff;
   border-top-color:transparent;
   border-radius:50%;
   animation:spin 1s linear infinite;
 }
-@keyframes spin { to { transform:rotate(360deg); } }
+@keyframes spin{to{transform:rotate(360deg);}}
+
+.score-table{
+  margin-top:16px;
+  width:100%;
+  border-collapse:collapse;
+  background:#fff;
+}
+.score-table th,.score-table td{
+  border:1px solid #c9d7e3;
+  padding:6px;
+  text-align:center;
+}
+.score-table tr.invalid{
+  text-decoration:line-through;
+  color:#999;
+}
 </style>
 </head>
 
@@ -191,12 +152,12 @@ main { padding:12px; padding-bottom:280px; }
 </header>
 
 <main>
-<table class="input-table">
+<table>
 <tr><th>名前</th><th>スコア</th><th>トビ</th><th>最終</th></tr>
-<tr data-idx="0" class="active"><td>A</td><td><input class="score" readonly></td><td><button class="tobi"></button></td><td class="final"></td></tr>
-<tr data-idx="1"><td>B</td><td><input class="score" readonly></td><td><button class="tobi"></button></td><td class="final"></td></tr>
-<tr data-idx="2"><td>C</td><td><input class="score" readonly></td><td><button class="tobi"></button></td><td class="final"></td></tr>
-<tr data-idx="3"><td>D</td><td><input class="score" readonly></td><td><button class="tobi"></button></td><td class="final"></td></tr>
+<tr data-i="0" class="active"><td>A</td><td><input class="score" readonly></td><td><button class="tobi"></button></td><td class="final"></td></tr>
+<tr data-i="1"><td>B</td><td><input class="score" readonly></td><td><button class="tobi"></button></td><td class="final"></td></tr>
+<tr data-i="2"><td>C</td><td><input class="score" readonly></td><td><button class="tobi"></button></td><td class="final"></td></tr>
+<tr data-i="3"><td>D</td><td><input class="score" readonly></td><td><button class="tobi"></button></td><td class="final"></td></tr>
 </table>
 
 <div class="actions">
@@ -209,54 +170,59 @@ main { padding:12px; padding-bottom:280px; }
 </main>
 
 <div class="keypad">
-<button data-k="up">↑</button>
-<button data-k="down">↓</button>
-<button data-k="-">−</button>
-<button data-k="clear">C</button>
-
-<button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button data-k="close">×</button>
-<button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
-<button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
-<button data-k="0">0</button>
+<button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button data-k="up">↑</button>
+<button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button><button data-k="down">↓</button>
+<button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button data-k="pm">±</button>
+<button data-k="clear">C</button><button data-k="0">0</button><button data-k="close">×</button>
 </div>
 
 <button id="showKeypad">電</button>
-
 <div id="loading"><div></div></div>
 
 <script>
-const GAS_URL='https://script.google.com/macros/s/AKfycby1XFM-wXWJKnuSnLXpuUGhT6dE-bmrgFwVI_V5XVzLlHTnsFr0TiVRGRfNlqK38z_a/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycby1XFM-wXWJKnuSnLXpuUGhT6dE-bmrgFwVI_V5XVzLlHTnsFr0TiVRGRfNlqK38z_a/exec';
+
 let cur=0,fresh=[1,1,1,1],lastScore=null;
 
+/* フォーカス */
 function focus(i){
   cur=Math.max(0,Math.min(3,i));
-  fresh[cur]=1;
   $('tr').removeClass('active');
-  $(`tr[data-idx="${cur}"]`).addClass('active');
+  $(`tr[data-i="${cur}"]`).addClass('active');
 }
+$('.score').on('click',function(){
+  focus($(this).closest('tr').data('i'));
+  fresh[cur]=1;
+});
 
+/* 電卓 */
 $('.keypad button').on('click',function(){
   const k=$(this).data('k');
   const inp=$('.score').eq(cur);
+
   if(k==='up')return focus(cur-1);
   if(k==='down')return focus(cur+1);
+  if(k==='close'){ $('.keypad').addClass('hidden');$('#showKeypad').show();return;}
   if(k==='clear'){inp.val('');fresh[cur]=1;return;}
-  if(k==='close'){ $('.keypad').addClass('hidden'); $('#showKeypad').show(); return;}
+  if(k==='pm'){
+    const v=inp.val();
+    if(!v)return;
+    inp.val(v.startsWith('-')?v.slice(1):'-'+v);
+    return;
+  }
   if(fresh[cur]){inp.val('');fresh[cur]=0;}
   inp.val((inp.val()||'')+k);
 });
-
 $('#showKeypad').on('click',()=>{
   $('.keypad').removeClass('hidden');
   $('#showKeypad').hide();
 });
 
-/* トビ独立トグル */
+/* トビ */
 $('.tobi').on('click',function(){
-  const t=$(this).text();
-  $(this).removeClass('plus minus').text('');
-  if(t==='')$(this).text('+10').addClass('plus');
-  else if(t==='+10')$(this).text('-10').addClass('minus');
+  if($(this).text()===''){ $(this).text('+10').addClass('plus'); return;}
+  if($(this).text()==='+10'){ $(this).text('-10').removeClass('plus').addClass('minus'); return;}
+  $(this).text('').removeClass('minus');
 });
 
 /* 計算 */
@@ -270,19 +236,25 @@ $('#calc').on('click',()=>{
   if(empty>1){alert('未入力は1人までです');return;}
 
   if(empty===1){
-    const sum3=raw.filter(v=>v!==null).reduce((a,b)=>a+b,0);
-    raw[raw.indexOf(null)]=1000-sum3;
-    $('.score').eq(raw.indexOf(null)).val(1000-sum3);
+    const idx=raw.indexOf(null);
+    raw[idx]=1000-raw.filter(v=>v!==null).reduce((a,b)=>a+b,0);
+    $('.score').eq(idx).val(raw[idx]);
   }
 
   if(raw.reduce((a,b)=>a+b,0)!==1000){
     alert('合計は1000にしてください');return;
   }
 
-  const idx=[0,1,2,3].sort((a,b)=>raw[b]-raw[a]);
+  const plus=$('.tobi').filter((i,e)=>$(e).text()==='+10').length;
+  const minus=$('.tobi').filter((i,e)=>$(e).text()==='-10').length;
+  if(!((plus===0&&minus===0)||(plus===1&&minus===1))){
+    alert('トビ設定が不正です');return;
+  }
+
+  const order=[0,1,2,3].sort((a,b)=>raw[b]-raw[a]);
   const uma=[500,100,-100,-300];
-  let sc=raw.map((v,i)=>Math.round((v+uma[idx.indexOf(i)]-300)/10));
-  sc[idx[0]]-=sc.reduce((a,b)=>a+b,0);
+  let sc=raw.map((v,i)=>Math.round((v+uma[order.indexOf(i)]-300)/10));
+  sc[order[0]]-=sc.reduce((a,b)=>a+b,0);
 
   $('.tobi').each((i,e)=>{
     if($(e).text()==='+10')sc[i]+=10;
@@ -301,25 +273,41 @@ $('#calc').on('click',()=>{
 $('#reg').on('click',()=>{
   if(!confirm('登録しますか？'))return;
   $('#loading').show();
-  fetch(GAS_URL,{method:'POST',body:JSON.stringify({score:lastScore})})
-    .then(()=>{alert('登録しました');location.reload();});
+  fetch(GAS_URL,{
+    method:'POST',
+    body:JSON.stringify({score:lastScore})
+  }).then(()=>{
+    $('#loading').hide();
+    alert('登録しました');
+    location.reload();
+  });
 });
 
 /* 履歴 */
 $('#show').on('click',()=>{
   $('#loading').show();
-  fetch(GAS_URL).then(r=>r.json()).then(data=>{
-    $('#loading').hide();
-    let h='<table class="score-table"><tr><th>日時</th><th>A</th><th>B</th><th>C</th><th>D</th></tr>';
-    data.forEach(d=>{
-      h+=`<tr class="${d.valid?'':'invalid'}" data-row="${d.row}">
-        <td>${new Date(d.time).toLocaleString()}</td>
-        ${d.score.map(s=>`<td>${s}</td>`).join('')}
-      </tr>`;
+  fetch(GAS_URL)
+    .then(r=>r.json())
+    .then(data=>{
+      $('#loading').hide();
+      let html='<table class="score-table"><tr><th>日時</th><th>A</th><th>B</th><th>C</th><th>D</th></tr>';
+      data.forEach(d=>{
+        html+=`
+        <tr class="${d.valid?'':'invalid'}" data-row="${d.row}">
+          <td>${new Date(d.time).toLocaleString()}</td>
+          ${d.score.map(s=>`<td>${s}</td>`).join('')}
+        </tr>`;
+      });
+      html+='</table>';
+      $('#scoreArea').html(html);
+
+      $('.score-table tr[data-row]').on('click',function(){
+        const row=$(this).data('row');
+        if(confirm('有効／無効を切り替えますか？')){
+          fetch(GAS_URL+'?toggle='+row).then(()=>$('#show').click());
+        }
+      });
     });
-    h+='</table>';
-    $('#scoreArea').html(h);
-  });
 });
 </script>
 
