@@ -447,7 +447,7 @@ qs('#registerBtn').onclick = async () => {
 
   try {
     showLoading(true);
-alert('aaa1');
+alert('aaa333');
     const res = await fetch(GAS_URL, {
       method: 'POST',
       headers: {
@@ -455,19 +455,16 @@ alert('aaa1');
       },
       body: JSON.stringify({
         action: 'register',
-        a: calculatedScores[0],
-        b: calculatedScores[1],
-        c: calculatedScores[2],
-        d: calculatedScores[3]
+        a: 2,
+        b: 3,
+        c: 4,
+        d: 5
       })
     });
-alert('aaa2');
 
     if (!res.ok) throw new Error('network');
-alert('aaa3');
 
     const data = await res.json();
-alert('aaa4');
     renderHistory(data);
     resetAll();
     alert('登録しました');
