@@ -523,6 +523,10 @@ qs('#registerBtn').onclick = async () => {
     alert('先に計算してください');
     return;
   }
+  if (!isCalculatedScoresSumZero()) {
+    alert('最終スコアの合計が不正です。');
+    return;
+  }
   if (!confirm('登録しますか？')) return;
 
   try {
@@ -548,6 +552,13 @@ qs('#registerBtn').onclick = async () => {
   }
 };
 
+function isCalculatedScoresSumZero() {
+  let sum = 0;
+  for(let i=0;i<4;i++){
+    sum += calculatedScores[i];
+  }
+  return (sum === 0);
+}
 
 
 
