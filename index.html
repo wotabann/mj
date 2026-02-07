@@ -670,10 +670,12 @@ function renderHistory(data) {
   });
 
   // === プレイヤー別 合計行(末尾側) ===
-  const trsum2 = document.createElement('tr');
-  trsum2.style.fontWeight = 'bold';
-  trsum2.innerHTML = sumInnerHtml;
-  tb.appendChild(trsum2);
+  if (data.length > 0) {
+    const trsum2 = document.createElement('tr');
+    trsum2.style.fontWeight = 'bold';
+    trsum2.innerHTML = sumInnerHtml;
+    tb.appendChild(trsum2);
+  }
 }
 
 
