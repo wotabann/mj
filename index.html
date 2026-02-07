@@ -77,6 +77,57 @@ button:disabled{opacity:.4;}
 }
 
 .name{font-weight:bold;}
+
+  /* ===== 入力テーブル専用（視認性重視） ===== */
+.input-table {
+  background: #f5f6f4; /* 淡いグレー（緑寄り） */
+  color: #1a1a1a;
+  border: 2px solid #0f3d2e;
+}
+
+.input-table th {
+  background: #e1e5e2;
+  color: #0f3d2e;
+  font-weight: bold;
+}
+
+.input-table td {
+  border-bottom: 1px solid #cfd6d2;
+}
+
+.input-table tr.active {
+  background: #d9efe6; /* フォーカス行は淡いミント */
+}
+
+/* 入力欄 */
+.input-table input.score {
+  background: #ffffff;
+  color: #000;
+  box-shadow: inset 0 0 0 1px #aab5af;
+}
+
+/* 最終スコア */
+.input-table .final.plus {
+  color: #1b7f4b;
+}
+.input-table .final.minus {
+  color: #b00020;
+}
+
+/* トビ賞ボタン */
+.input-table .toggle {
+  background: #f0f0f0;
+  color: #333;
+}
+.input-table .toggle.plus {
+  background: #c8f5d4;
+  color: #0f3d2e;
+}
+.input-table .toggle.minus {
+  background: #ffd6d6;
+  color: #6a0000;
+}
+
 </style>
 </head>
 
@@ -87,7 +138,7 @@ button:disabled{opacity:.4;}
 <button id="themeToggle" style="float:right;">🌙</button>
 </h3>
 
-<table>
+<table class="input-table">
 <tr><th>名前</th><th>スコア</th><th>トビ賞</th><th>最終</th></tr>
 <tr data-idx="0"><td><span class="name">A</span></td><td><input class="score" readonly></td><td><button class="toggle"></button></td><td class="final"></td></tr>
 <tr data-idx="1"><td><span class="name">B</span></td><td><input class="score" readonly></td><td><button class="toggle"></button></td><td class="final"></td></tr>
