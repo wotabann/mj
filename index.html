@@ -195,7 +195,7 @@ button:disabled {
 
 
   <body>
-<header>MJ Score!</header>
+<header>MJ Score! テストページ</header>
 
 <div class="container">
 
@@ -324,6 +324,7 @@ function applyInput(val){
 qsa('.calc-btn').forEach(btn=>{
   if(/^\d$/.test(btn.textContent)){
     btn.onclick=()=>applyInput(btn.textContent);
+    qs('#registerBtn').disabled = true;
   }
 });
 
@@ -338,11 +339,13 @@ qs('#btnSign').onclick=()=>{
     focusedInput.value.startsWith('-')
     ? focusedInput.value.slice(1)
     : '-' + focusedInput.value;
+  qs('#registerBtn').disabled = true;
 };
 
 /* C */
 qs('#btnClear').onclick=()=>{
   if(focusedInput) focusedInput.value='';
+  qs('#registerBtn').disabled = true;
 };
 
 /* ↑↓ */
