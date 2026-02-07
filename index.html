@@ -443,47 +443,7 @@ qs('#calcBtn').onclick=()=>{
 };
 
 /* ========= 登録 ========= */
-
-qs('#registerBtn').onclick = async () => {
-  // 再チェック（計算済みでなくてもOK）
-  qs('#calcBtn').onclick();
-  if (!calculatedScores) return;
-
-  if (!confirm('登録しますか？')) return;
-
-  try {
-    showLoading(true);
-
-    const res = await fetch(GAS_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'register',
-        a: calculatedScores[0],
-        b: calculatedScores[1],
-        c: calculatedScores[2],
-        d: calculatedScores[3]
-      })
-    });
-
-    if (!res.ok) throw new Error();
-
-    const history = await res.json();
-    renderHistory(history);
-
-    alert('登録しました');
-    resetAll();
-
-  } catch (e) {
-    alert('通信に失敗しました');
-  } finally {
-    showLoading(false);
-  }
-};
-
-
-  
-qs('#registerBtnolddddddd').onclick=async()=>{
+qs('#registerBtn').onclick=async()=>{
   if(!calculatedScores) return;
   if(!confirm('登録しますか？')) return;
   try{
@@ -522,54 +482,7 @@ async function fetchHistory(){
   }
 }
 
-function renderHistory(data) {
-  const tb = qs('#historyBody');
-  tb.innerHTML = '';
-
-  let total = [0, 0, 0, 0];
-
-  data.forEach(r => {
-    const tr = document.createElement('tr');
-    if (r.invalid) tr.classList.add('invalid');
-
-    if (!r.invalid) {
-      total[0] += r.a;
-      total[1] += r.b;
-      total[2] += r.c;
-      total[3] += r.d;
-    }
-
-    tr.innerHTML = `
-      <td>${r.no}</td>
-      <td>${r.datetime}</td>
-      <td>${r.a}</td>
-      <td>${r.b}</td>
-      <td>${r.c}</td>
-      <td>${r.d}</td>
-      <td></td>
-    `;
-
-    tr.onclick = () => toggleInvalid(r.no);
-    tb.appendChild(tr);
-  });
-
-  // 合計行
-  const tr = document.createElement('tr');
-  tr.classList.add('total-row');
-  tr.innerHTML = `
-    <td colspan="2">合計</td>
-    <td>${total[0]}</td>
-    <td>${total[1]}</td>
-    <td>${total[2]}</td>
-    <td>${total[3]}</td>
-    <td></td>
-  `;
-  tb.appendChild(tr);
-}
-
-
-  
-function renderHistoryolddddddd(data){
+function renderHistory(data){
   const tb=qs('#historyBody');
   tb.innerHTML='';
   data.forEach(r=>{
