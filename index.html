@@ -16,123 +16,51 @@
   --panel:#ffffff;
   --txt:#222;
 }
+body{margin:0;background:var(--bg);font-family:system-ui;color:var(--txt);}
+header{background:linear-gradient(135deg,var(--dark),var(--main));color:#fff;padding:12px;}
+main{padding:12px;padding-bottom:300px;}
 
-body{
-  margin:0;
-  background:var(--bg);
-  font-family:system-ui;
-  color:var(--txt);
-}
-
-header{
-  background:linear-gradient(135deg,var(--dark),var(--main));
-  color:#fff;
-  padding:12px 16px;
-}
-
-main{
-  padding:12px;
-  padding-bottom:300px;
-}
-
-/* ===== 入力 ===== */
-table{
-  width:100%;
-  background:var(--panel);
-  border-radius:14px;
-  border-collapse:collapse;
-}
-th,td{
-  padding:8px;
-  text-align:center;
-}
+table{width:100%;background:#fff;border-radius:14px;border-collapse:collapse;}
+th,td{padding:8px;text-align:center;}
 th{background:var(--soft);}
 tr+tr td{border-top:1px solid #ddd;}
 tr.active{background:#d7ebe4;}
 
-.score{
-  width:80px;
-  font-size:20px;
-  text-align:right;
-}
-
-.tobi{
-  width:56px;
-  border-radius:20px;
-  border:none;
-}
+.score{width:80px;font-size:20px;text-align:right;}
+.tobi{width:56px;border-radius:20px;border:none;}
 .tobi.plus{background:#c9f2d8;}
 .tobi.minus{background:#f6caca;}
 
 .final.plus{color:#1e8e3e;}
 .final.minus{color:#c62828;}
 
-.actions{
-  margin-top:12px;
-  display:flex;
-  gap:10px;
-}
-.actions button{
-  flex:1;
-  padding:12px;
-  border:none;
-  border-radius:30px;
-  font-size:16px;
-}
+.actions{margin-top:12px;display:flex;gap:10px;}
+.actions button{flex:1;padding:12px;border:none;border-radius:30px;font-size:16px;}
 #calc{background:var(--main);color:#fff;}
 #reg{background:var(--gold);}
 #show{background:#e0e6e3;}
 
-/* ===== 電卓 ===== */
 .keypad{
-  position:fixed;
-  right:0;
-  bottom:0;
-  width:70%;
-  max-width:420px;
-  background:var(--panel);
-  padding:12px;
-  border-top-left-radius:20px;
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:10px;
+  position:fixed;right:0;bottom:0;width:70%;max-width:420px;
+  background:#fff;padding:12px;border-top-left-radius:20px;
+  display:grid;grid-template-columns:repeat(4,1fr);gap:10px;
 }
 .keypad.hidden{display:none;}
-.keypad button{
-  padding:16px;
-  font-size:22px;
-  border-radius:14px;
-  border:none;
-}
+.keypad button{padding:16px;font-size:22px;border-radius:14px;border:none;}
 
-/* 電／× */
 #toggleKeypad{
-  position:fixed;
-  right:14px;
-  bottom:14px;
-  width:56px;
-  height:56px;
-  border-radius:50%;
-  background:var(--main);
-  color:#fff;
-  border:none;
-  font-size:20px;
+  position:fixed;right:14px;bottom:14px;
+  width:56px;height:56px;border-radius:50%;
+  background:var(--main);color:#fff;border:none;font-size:20px;
 }
 
-/* ローディング */
 #loading{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.4);
-  display:none;
-  justify-content:center;
-  align-items:center;
+  position:fixed;inset:0;background:rgba(0,0,0,.4);
+  display:none;justify-content:center;align-items:center;
 }
 #loading div{
-  width:48px;height:48px;
-  border:6px solid #fff;
-  border-top-color:transparent;
-  border-radius:50%;
+  width:48px;height:48px;border:6px solid #fff;
+  border-top-color:transparent;border-radius:50%;
   animation:spin 1s linear infinite;
 }
 @keyframes spin{to{transform:rotate(360deg);}}
@@ -171,22 +99,22 @@ tr.active{background:#d7ebe4;}
 <script>
 const GAS_URL = 'https://script.google.com/macros/s/AKfycby1XFM-wXWJKnuSnLXpuUGhT6dE-bmrgFwVI_V5XVzLlHTnsFr0TiVRGRfNlqK38z_a/exec';
 
-let active=0;
-let fresh=[true,true,true,true];
+let active = 0;
+let fresh = [true,true,true,true];
 
 /* フォーカス */
 function focusRow(i){
-  active=Math.max(0,Math.min(3,i));
+  active = Math.max(0,Math.min(3,i));
   $('tr').removeClass('active');
   $(`tr[data-i="${active}"]`).addClass('active');
-  fresh[active]=true;
+  fresh[active] = true;
 }
 
 $('.score').on('click',function(){
   focusRow($(this).closest('tr').data('i'));
 });
 
-/* 電卓切替 */
+/* 電卓表示切替 */
 $('#toggleKeypad').on('click',()=>{
   $('#keypad').toggleClass('hidden');
   $('#toggleKeypad').text($('#keypad').hasClass('hidden')?'電':'×');
@@ -194,40 +122,46 @@ $('#toggleKeypad').on('click',()=>{
 
 /* 電卓入力 */
 $('.keypad button').on('click',function(){
-  const k=$(this).data('k');
-  const input=$('.score').eq(active);
+  const k = $(this).data('k');
+  const input = $('.score').eq(active);
 
   if(['0','1','2','3','4','5','6','7','8','9','pm'].includes(k)){
     if(fresh[active]){
       input.val('');
-      fresh[active]=false;
+      fresh[active] = false;
     }
   }
 
   if(k==='up') return focusRow(active-1);
   if(k==='down') return focusRow(active+1);
-  if(k==='clear'){input.val('');fresh[active]=true;return;}
+  if(k==='clear'){ input.val(''); fresh[active]=true; return; }
+
   if(k==='pm'){
-    const v=input.val();
-    if(!v)return;
-    input.val(v.startsWith('-')?v.slice(1):'-'+v);
+    const v = input.val();
+    if(!v) return;
+    input.val(v.startsWith('-') ? v.slice(1) : '-' + v);
     return;
   }
 
   if(k==='fill'){
-    let vals=$('.score').map((i,e)=>$(e).val()===''?null:Number($(e).val())).get();
-    const empties=vals.map((v,i)=>v===null?i:null).filter(v=>v!==null);
+    const vals = $('.score').map((i,e)=>{
+      const v = $(e).val().trim();
+      return v==='' ? null : Number(v);
+    }).get();
+
+    const empties = vals.map((v,i)=>v===null?i:null).filter(v=>v!==null);
     if(empties.length!==1){
       alert('空欄が1人のときのみ補完できます');
       return;
     }
-    const idx=empties[0];
-    const sum=vals.reduce((a,b)=>a+(b??0),0);
-    $('.score').eq(idx).val(1000-sum);
+    const idx = empties[0];
+    const sum = vals.reduce((a,b)=>a+(b??0),0);
+    $('.score').eq(idx).val(1000 - sum);
+    fresh[idx] = false;
     return;
   }
 
-  input.val((input.val()||'')+k);
+  input.val((input.val()||'') + k);
 });
 
 /* トビ */
@@ -239,25 +173,32 @@ $('.tobi').on('click',function(){
 
 /* 計算 */
 $('#calc').on('click',()=>{
-  const raw=$('.score').map((i,e)=>$(e).val()===''?null:Number($(e).val())).get();
-  if(raw.includes(null)){ alert('未入力があります'); return; }
+  const raw = $('.score').map((i,e)=>{
+    const v = $(e).val().trim();
+    return v==='' ? null : Number(v);
+  }).get();
+
+  if(raw.includes(null)){
+    alert('未入力があります');
+    return;
+  }
 
   if(raw.reduce((a,b)=>a+b,0)!==1000){
     alert('合計は1000にしてください');
     return;
   }
 
-  const plus=$('.tobi').filter((i,e)=>$(e).text()==='+10').length;
-  const minus=$('.tobi').filter((i,e)=>$(e).text()==='-10').length;
-  if(!((plus===0&&minus===0)||(plus===1&&minus===1))){
+  const plus = $('.tobi').filter((i,e)=>$(e).text()==='+10').length;
+  const minus = $('.tobi').filter((i,e)=>$(e).text()==='-10').length;
+  if(!((plus===0 && minus===0) || (plus===1 && minus===1))){
     alert('トビ設定が不正です');
     return;
   }
 
   const order=[0,1,2,3].sort((a,b)=>raw[b]-raw[a]);
   const uma=[500,100,-100,-300];
-  let sc=raw.map((v,i)=>Math.round((v+uma[order.indexOf(i)]-300)/10));
-  sc[order[0]]-=sc.reduce((a,b)=>a+b,0);
+  let sc = raw.map((v,i)=>Math.round((v + uma[order.indexOf(i)] - 300)/10));
+  sc[order[0]] -= sc.reduce((a,b)=>a+b,0);
 
   $('.tobi').each((i,e)=>{
     if($(e).text()==='+10') sc[i]+=10;
@@ -267,6 +208,42 @@ $('#calc').on('click',()=>{
   $('.final').each((i,e)=>{
     $(e).text(sc[i]).removeClass('plus minus')
       .addClass(sc[i]>=0?'plus':'minus');
+  });
+});
+
+/* 登録 */
+$('#reg').on('click',()=>{
+  if(!confirm('登録しますか？')) return;
+
+  $('#loading').show();
+  $.ajax({
+    url:GAS_URL,
+    method:'POST',
+    data:JSON.stringify({action:'register'}),
+    contentType:'application/json'
+  }).done(res=>{
+    alert('登録しました');
+    $('.score,.final').val('').text('');
+    $('.tobi').text('').removeClass('plus minus');
+  }).fail(()=>{
+    alert('通信に失敗しました');
+  }).always(()=>{
+    $('#loading').hide();
+  });
+});
+
+/* 履歴 */
+$('#show').on('click',()=>{
+  $('#loading').show();
+  $.ajax({
+    url:GAS_URL + '?action=list',
+    method:'GET'
+  }).done(res=>{
+    alert('履歴取得成功（※表示処理は省略）');
+  }).fail(()=>{
+    alert('通信に失敗しました');
+  }).always(()=>{
+    $('#loading').hide();
   });
 });
 </script>
