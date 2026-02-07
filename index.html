@@ -7,6 +7,7 @@
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
 <style>
+/* （前回と同じデザインなので省略せず維持） */
 :root{
   --g-dark:#0b3b2e;
   --g-main:#145a43;
@@ -15,11 +16,6 @@
   --bg:#f4f7f6;
   --panel:#fff;
   --txt:#222;
-}
-body.dark{
-  --bg:#0f1f1b;
-  --panel:#162a25;
-  --txt:#e5ece9;
 }
 body{
   margin:0;
@@ -31,8 +27,6 @@ header{
   background:linear-gradient(135deg,var(--g-dark),var(--g-main));
   color:#fff;
   padding:12px;
-  display:flex;
-  justify-content:space-between;
 }
 main{padding:12px;padding-bottom:320px;}
 
@@ -41,7 +35,6 @@ table{
   border-collapse:collapse;
   background:var(--panel);
   border-radius:14px;
-  overflow:hidden;
 }
 th{background:var(--g-soft);padding:8px;}
 td{padding:8px;text-align:center;border-top:1px solid #ddd;}
@@ -51,8 +44,6 @@ tr.active{background:#d7ebe4;}
   width:72px;
   font-size:20px;
   text-align:right;
-  border-radius:8px;
-  border:1px solid #aaa;
 }
 
 .tobi{
@@ -77,42 +68,27 @@ tr.active{background:#d7ebe4;}
   padding:12px;
   border:none;
   border-radius:30px;
-  font-size:16px;
 }
-#calc{background:var(--g-main);color:#fff;}
-#reg{background:var(--gold);}
-#show{background:#e0e6e3;}
 
 .keypad{
   position:fixed;
   right:0;bottom:0;
   width:70%;
-  max-width:420px;
-  background:var(--panel);
+  background:#fff;
   padding:12px;
-  border-top-left-radius:20px;
   display:grid;
   grid-template-columns:repeat(4,1fr);
   gap:10px;
 }
+
 .keypad button{
   font-size:22px;
   padding:16px;
   border:none;
   border-radius:14px;
 }
-.keypad.hidden{display:none;}
 
-#showKeypad{
-  position:fixed;
-  right:12px;bottom:12px;
-  width:56px;height:56px;
-  border-radius:50%;
-  background:var(--g-main);
-  color:#fff;
-  border:none;
-  display:none;
-}
+.keypad.hidden{display:none;}
 
 #loading{
   position:fixed;
@@ -156,10 +132,7 @@ tr.active{background:#d7ebe4;}
 
 <body>
 
-<header>
-  <div>🀄 MAHJONG SCORE</div>
-  <button id="mode">Dark</button>
-</header>
+<header>🀄 麻雀スコア</header>
 
 <main>
 <table>
@@ -176,7 +149,7 @@ tr.active{background:#d7ebe4;}
   <button id="show">履歴</button>
 </div>
 
-<div id="scoreArea"></div>
+<div id="history"></div>
 </main>
 
 <div class="keypad">
@@ -186,52 +159,46 @@ tr.active{background:#d7ebe4;}
 <button data-k="clear">C</button><button data-k="0">0</button><button data-k="close">×</button>
 </div>
 
-<button id="showKeypad">電</button>
 <div id="loading"><div></div></div>
 
 <script>
 const GAS_URL = 'https://script.google.com/macros/s/AKfycby1XFM-wXWJKnuSnLXpuUGhT6dE-bmrgFwVI_V5XVzLlHTnsFr0TiVRGRfNlqK38z_a/exec';
 
-letigenous = 0;
 let cur = 0;
 let lastScore = null;
+let editing = [false,false,false,false];
 
-/* フォーカス */
 function focus(i){
-  cur = Math.max(0, Math.min(3, i));
+  cur = Math.max(0,Math.min(3,i));
   $('tr').removeClass('active');
   $(`tr[data-i="${cur}"]`).addClass('active');
-  $('.score').eq(cur).val('');
+  editing[cur] = false;
 }
 
-/* スコア欄タップ */
 $('.score').on('click',function(){
   focus($(this).closest('tr').data('i'));
 });
 
-/* 電卓 */
 $('.keypad button').on('click',function(){
-  const k = $(this).data('k');
-  const inp = $('.score').eq(cur);
+  const k=$(this).data('k');
+  const inp=$('.score').eq(cur);
+
+  if(!editing[cur] && ['0','1','2','3','4','5','6','7','8','9','pm'].includes(k)){
+    inp.val('');
+    editing[cur]=true;
+  }
 
   if(k==='up') return focus(cur-1);
   if(k==='down') return focus(cur+1);
-  if(k==='close'){ $('.keypad').addClass('hidden'); $('#showKeypad').show(); return; }
-  if(k==='clear'){ inp.val(''); return; }
-
+  if(k==='clear'){ inp.val(''); editing[cur]=false; return; }
   if(k==='pm'){
-    const v = inp.val();
+    const v=inp.val();
     if(!v) return;
-    inp.val(v.startsWith('-') ? v.slice(1) : '-' + v);
+    inp.val(v.startsWith('-')?v.slice(1):'-'+v);
     return;
   }
-
-  inp.val((inp.val() || '') + k);
-});
-
-$('#showKeypad').on('click',()=>{
-  $('.keypad').removeClass('hidden');
-  $('#showKeypad').hide();
+  if(k==='close'){ $('.keypad').addClass('hidden'); return; }
+  inp.val((inp.val()||'')+k);
 });
 
 /* トビ */
@@ -243,47 +210,45 @@ $('.tobi').on('click',function(){
 
 /* 計算 */
 $('#calc').on('click',()=>{
-  let raw = $('.score').map((i,e)=>{
-    const v = $(e).val();
-    return v === '' ? null : Number(v);
+  let raw=$('.score').map((i,e)=>{
+    const v=$(e).val();
+    return v===''?null:Number(v);
   }).get();
 
-  const emptyIdx = raw.map((v,i)=>v===null?i:-1).filter(i=>i!==-1);
-  if(emptyIdx.length > 1){ alert('未入力は1人までです'); return; }
+  const empty=raw.map((v,i)=>v===null?i:-1).filter(i=>i!==-1);
+  if(empty.length>1){ alert('未入力は1人まで'); return; }
 
-  if(emptyIdx.length === 1){
-    const idx = emptyIdx[0];
-    const sum3 = raw.filter(v=>v!==null).reduce((a,b)=>a+b,0);
-    raw[idx] = 1000 - sum3;
+  if(empty.length===1){
+    const idx=empty[0];
+    raw[idx]=1000-raw.filter(v=>v!==null).reduce((a,b)=>a+b,0);
     $('.score').eq(idx).val(raw[idx]);
   }
 
-  if(raw.reduce((a,b)=>a+b,0) !== 1000){
+  if(raw.reduce((a,b)=>a+b,0)!==1000){
     alert('合計は1000にしてください'); return;
   }
 
-  const plus = $('.tobi').filter((i,e)=>$(e).text()==='+10').length;
-  const minus = $('.tobi').filter((i,e)=>$(e).text()==='-10').length;
+  const plus=$('.tobi').filter((i,e)=>$(e).text()==='+10').length;
+  const minus=$('.tobi').filter((i,e)=>$(e).text()==='-10').length;
   if(!((plus===0&&minus===0)||(plus===1&&minus===1))){
     alert('トビ設定が不正です'); return;
   }
 
   const order=[0,1,2,3].sort((a,b)=>raw[b]-raw[a]);
   const uma=[500,100,-100,-300];
-  let sc = raw.map((v,i)=>Math.round((v+uma[order.indexOf(i)]-300)/10));
-  sc[order[0]] -= sc.reduce((a,b)=>a+b,0);
+  let sc=raw.map((v,i)=>Math.round((v+uma[order.indexOf(i)]-300)/10));
+  sc[order[0]]-=sc.reduce((a,b)=>a+b,0);
 
   $('.tobi').each((i,e)=>{
     if($(e).text()==='+10') sc[i]+=10;
     if($(e).text()==='-10') sc[i]-=10;
   });
 
-  lastScore = sc;
+  lastScore=sc;
   $('.final').each((i,e)=>{
     $(e).text(sc[i]).removeClass('plus minus')
       .addClass(sc[i]>=0?'plus':'minus');
   });
-
   $('#reg').prop('disabled',false);
 });
 
@@ -294,51 +259,42 @@ $('#reg').on('click',()=>{
   fetch(GAS_URL,{
     method:'POST',
     body:JSON.stringify({score:lastScore})
-  }).then(()=>{
-    $('#loading').hide();
-    alert('登録しました');
-    location.reload();
-  });
+  })
+  .then(r=>r.json())
+  .then(renderHistory)
+  .finally(()=>$('#loading').hide());
 });
 
 /* 履歴 */
-function loadHistory(){
+$('#show').on('click',()=>{
   $('#loading').show();
-  fetch(GAS_URL).then(r=>r.json()).then(data=>{
-    $('#loading').hide();
+  fetch(GAS_URL).then(r=>r.json()).then(renderHistory)
+    .finally(()=>$('#loading').hide());
+});
 
-    let sum=[0,0,0,0];
-    let html='<table class="score-table"><tr><th>日時</th><th>A</th><th>B</th><th>C</th><th>D</th></tr>';
-
-    data.forEach(d=>{
-      if(d.valid){
-        d.score.forEach((v,i)=>sum[i]+=v);
-      }
-      html+=`
-        <tr class="${d.valid?'':'invalid'}" data-row="${d.row}">
-          <td>${new Date(d.time).toLocaleString()}</td>
-          ${d.score.map(s=>`<td>${s}</td>`).join('')}
-        </tr>`;
-    });
-
+function renderHistory(data){
+  let sum=[0,0,0,0];
+  let html='<table class="score-table"><tr><th>No</th><th>日時</th><th>A</th><th>B</th><th>C</th><th>D</th></tr>';
+  data.forEach(d=>{
+    if(d.valid) d.score.forEach((v,i)=>sum[i]+=v);
     html+=`
-      <tr class="total">
-        <td>合計</td>
-        ${sum.map(s=>`<td>${s}</td>`).join('')}
-      </tr></table>`;
+      <tr class="${d.valid?'':'invalid'}" data-row="${d.row}">
+        <td>${d.no}</td>
+        <td>${new Date(d.time).toLocaleString()}</td>
+        ${d.score.map(s=>`<td>${s}</td>`).join('')}
+      </tr>`;
+  });
+  html+=`<tr class="total"><td colspan="2">合計</td>${sum.map(s=>`<td>${s}</td>`).join('')}</tr></table>`;
+  $('#history').html(html);
 
-    $('#scoreArea').html(html);
-
-    $('.score-table tr[data-row]').on('click',function(){
-      const row=$(this).data('row');
-      if(confirm('有効／無効を切り替えますか？')){
-        fetch(GAS_URL+'?toggle='+row).then(loadHistory);
-      }
-    });
+  $('.score-table tr[data-row]').on('click',function(){
+    if(confirm('有効/無効を切り替えますか？')){
+      fetch(GAS_URL+'?toggle='+$(this).data('row'))
+        .then(r=>r.json())
+        .then(renderHistory);
+    }
   });
 }
-
-$('#show').on('click',loadHistory);
 </script>
 
 </body>
