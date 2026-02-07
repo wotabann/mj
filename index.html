@@ -9,92 +9,128 @@
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
 <style>
+:root {
+  --green-dark:#0f3d2e;
+  --green-soft:#d9efe6;
+  --bg:#f4f6f5;
+  --panel:#ffffff;
+  --text:#222;
+}
+
+body.dark {
+  --bg:#121212;
+  --panel:#1e1e1e;
+  --text:#ddd;
+}
+
 body {
+  margin:0;
   font-family: system-ui, sans-serif;
-  margin: 10px;
-  background: #f4f6f5;
+  background:var(--bg);
+  color:var(--text);
 }
 
-h2 {
-  margin: 6px 0;
-  color: #0f3d2e;
+header {
+  background:var(--green-dark);
+  color:#fff;
+  padding:10px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
+button {
+  border:none;
+  border-radius:10px;
+  padding:8px 14px;
+  font-size:16px;
 }
 
+main {
+  padding:10px;
+}
+
+/* ===== 入力テーブル ===== */
 .input-table {
-  background: #f7f8f7;
-  border: 2px solid #0f3d2e;
+  width:100%;
+  border-collapse:collapse;
+  background:var(--panel);
+  border:2px solid var(--green-dark);
 }
 
 .input-table th {
-  background: #e1e5e2;
-  color: #0f3d2e;
-  padding: 6px;
+  background:var(--green-soft);
+  padding:6px;
 }
 
 .input-table td {
-  padding: 6px;
-  text-align: center;
+  padding:6px;
+  text-align:center;
 }
 
 .input-table tr.active {
-  background: #d9efe6;
+  background:#cfe8dd;
 }
 
 .score {
-  width: 60px;
-  text-align: right;
-  font-size: 18px;
-  background: #fff;
-  border: 1px solid #aaa;
+  width:70px;
+  font-size:18px;
+  text-align:right;
+  background:#fff;
+  border:1px solid #aaa;
 }
 
-.final.plus { color: green; }
-.final.minus { color: red; }
+.final.plus { color:#1e8e3e; }
+.final.minus { color:#c62828; }
 
 .tobi {
-  width: 50px;
-  font-weight: bold;
-  border-radius: 10px;
+  width:52px;
+  font-weight:bold;
+  border-radius:12px;
 }
-
 .tobi.plus { background:#c9f2d8; }
 .tobi.minus { background:#f6caca; }
 
-button {
-  font-size: 16px;
-  padding: 8px 14px;
-  margin: 6px 4px;
+/* ===== 操作ボタン ===== */
+.actions {
+  margin-top:10px;
+  display:flex;
+  gap:10px;
 }
 
+/* ===== テンキー（電卓配列） ===== */
 .keypad {
-  position: fixed;
-  bottom: 0;
-  right: 0;
-  width: 70%;
-  background: #f5f6f4;
-  border-top: 2px solid #0f3d2e;
-  border-left: 2px solid #0f3d2e;
-  padding: 10px;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
+  position:fixed;
+  bottom:0;
+  right:0;
+  width:70%;
+  max-width:420px;
+  background:var(--panel);
+  border-left:2px solid var(--green-dark);
+  border-top:2px solid var(--green-dark);
+  padding:10px;
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
 }
 
 .keypad button {
-  font-size: 20px;
-  padding: 14px 0;
-  background: #fff;
-  border-radius: 10px;
+  padding:16px 0;
+  font-size:20px;
+  background:#fff;
+  border-radius:12px;
+  box-shadow:0 2px 0 #aaa;
 }
 
-.keypad .clear { background:#ffd6d6; }
-.keypad .move { background:#e1e5e2; }
+.keypad button:active {
+  transform:translateY(2px);
+  box-shadow:0 0 0;
+}
 
+.keypad .move { background:#e1e5e2; }
+.keypad .clear { background:#ffd6d6; }
+
+/* ===== スコア表示 ===== */
 .score-table {
   width:100%;
   margin-top:10px;
@@ -106,8 +142,8 @@ button {
 .score-table td {
   border:1px solid #c9d7e3;
   padding:6px;
-  color:#222;
   text-align:center;
+  color:#222;
 }
 
 .score-table th {
@@ -115,7 +151,7 @@ button {
 }
 
 .score-table tr.invalid {
-  text-decoration: line-through;
+  text-decoration:line-through;
   color:#999;
   background:#f5f5f5;
 }
@@ -129,43 +165,30 @@ button {
 
 <body>
 
-<h2>入力</h2>
+<header>
+  <div>🀄 麻雀スコア</div>
+  <button id="mode">🌙</button>
+</header>
 
+<main>
 <table class="input-table">
-<tr><th>名前</th><th>スコア</th><th>トビ賞</th><th>最終点</th></tr>
-
-<tr data-idx="0" class="active">
-<td>A</td>
-<td><input class="score" readonly></td>
-<td><button class="tobi"> </button></td>
-<td class="final"></td>
-</tr>
-<tr data-idx="1">
-<td>B</td>
-<td><input class="score" readonly></td>
-<td><button class="tobi"> </button></td>
-<td class="final"></td>
-</tr>
-<tr data-idx="2">
-<td>C</td>
-<td><input class="score" readonly></td>
-<td><button class="tobi"> </button></td>
-<td class="final"></td>
-</tr>
-<tr data-idx="3">
-<td>D</td>
-<td><input class="score" readonly></td>
-<td><button class="tobi"> </button></td>
-<td class="final"></td>
-</tr>
+<tr><th>名前</th><th>スコア</th><th>トビ</th><th>最終</th></tr>
+<tr data-idx="0" class="active"><td>A</td><td><input class="score" readonly></td><td><button class="tobi"></button></td><td class="final"></td></tr>
+<tr data-idx="1"><td>B</td><td><input class="score" readonly></td><td><button class="tobi"></button></td><td class="final"></td></tr>
+<tr data-idx="2"><td>C</td><td><input class="score" readonly></td><td><button class="tobi"></button></td><td class="final"></td></tr>
+<tr data-idx="3"><td>D</td><td><input class="score" readonly></td><td><button class="tobi"></button></td><td class="final"></td></tr>
 </table>
 
-<button id="calc">計算</button>
-<button id="reg" disabled>登録</button>
-<button id="show">スコア表示</button>
+<div class="actions">
+  <button id="calc">計算</button>
+  <button id="reg" disabled>登録</button>
+  <button id="show">表示</button>
+</div>
 
 <div id="scoreArea"></div>
+</main>
 
+<!-- テンキー -->
 <div class="keypad">
 <button class="move" data-k="up">↑</button>
 <button class="move" data-k="down">↓</button>
@@ -179,139 +202,93 @@ button {
 </div>
 
 <script>
-const GAS_URL = 'https://script.google.com/macros/s/AKfycby1XFM-wXWJKnuSnLXpuUGhT6dE-bmrgFwVI_V5XVzLlHTnsFr0TiVRGRfNlqK38z_a/exec';
+const GAS_URL = '＜GASのURL＞';
 
-let cur = 0;
-let fresh = [true,true,true,true];
-let round = 1;
-let lastScore = null;
+let cur=0,fresh=[1,1,1,1],round=1,lastScore=null;
 
-// フォーカス
+/* ダークモード */
+$('#mode').on('click',()=> $('body').toggleClass('dark') );
+
+/* フォーカス */
 function focus(i){
-  cur = Math.max(0,Math.min(3,i));
-  fresh[cur] = true;
-  $('tr[data-idx]').removeClass('active');
-  $('tr[data-idx="'+cur+'"]').addClass('active');
+  cur=Math.max(0,Math.min(3,i));
+  fresh[cur]=1;
+  $('tr').removeClass('active');
+  $(`tr[data-idx="${cur}"]`).addClass('active');
 }
 
-// テンキー
+/* テンキー */
 $('.keypad button').on('click',function(){
-  const k = $(this).data('k');
-  const inp = $('.score').eq(cur);
-
-  if(k==='up') return focus(cur-1);
-  if(k==='down') return focus(cur+1);
-  if(k==='clear'){ inp.val(''); fresh[cur]=true; return; }
-
-  if(fresh[cur]){ inp.val(''); fresh[cur]=false; }
-  inp.val((inp.val()||'') + k);
+  const k=$(this).data('k');
+  const inp=$('.score').eq(cur);
+  if(k==='up')return focus(cur-1);
+  if(k==='down')return focus(cur+1);
+  if(k==='clear'){inp.val('');fresh[cur]=1;return;}
+  if(fresh[cur]){inp.val('');fresh[cur]=0;}
+  inp.val((inp.val()||'')+k);
 });
 
-// トビ賞
+/* トビ */
 $('.tobi').on('click',function(){
-  const t = $(this).text().trim();
+  const t=$(this).text();
   $('.tobi').text('').removeClass('plus minus');
-
-  if(t===''){
-    $(this).text('+10').addClass('plus');
-  } else if(t==='+10'){
-    $(this).text('-10').addClass('minus');
-  }
+  if(!t)$(this).text('+10').addClass('plus');
+  else if(t==='+10')$(this).text('-10').addClass('minus');
 });
 
-// 計算
-$('#calc').on('click',function(){
-  let raw = $('.score').map((i,e)=>Number($(e).val())||0).get();
-  const filled = raw.filter(v=>v!==0).length;
-
-  if(filled<3){
-    alert('未入力は1人までです');
-    return;
+/* 計算 */
+$('#calc').on('click',()=>{
+  let raw=$('.score').map((i,e)=>Number($(e).val())||0).get();
+  if(raw.filter(v=>v!==0).length<3){alert('未入力は1人まで');return;}
+  if(raw.includes(0)){
+    const s=raw.reduce((a,b)=>a+b,0);
+    const i=raw.indexOf(0);
+    raw[i]=1000-s;
+    $('.score').eq(i).val(raw[i]);
   }
-
-  // 補完
-  if(filled===3){
-    const sum3 = raw.reduce((a,b)=>a+b,0);
-    raw[raw.indexOf(0)] = 1000 - sum3;
-    $('.score').eq(raw.indexOf(1000-sum3)).val(1000-sum3);
+  if(raw.reduce((a,b)=>a+b,0)!==1000){
+    alert('合計は1000にしてください');return;
   }
-
-  // 合計チェック
-  const total = raw.reduce((a,b)=>a+b,0);
-  if(total !== 1000){
-    alert('合計は1000にしてください');
-    return;
-  }
-
-  // 順位処理
-  const idx = [0,1,2,3].sort((a,b)=>raw[b]-raw[a]);
-  let pt = Array(4).fill(0);
-  pt[idx[0]]+=500; pt[idx[1]]+=100; pt[idx[2]]-=100; pt[idx[3]]-=300;
-
-  let sc = raw.map((v,i)=>Math.round(((v+pt[i]-300)/10)));
-
-  const adj = sc.reduce((a,b)=>a+b,0);
-  sc[idx[0]] -= adj;
-
+  const idx=[0,1,2,3].sort((a,b)=>raw[b]-raw[a]);
+  let pt=[500,100,-100,-300];
+  let sc=raw.map((v,i)=>Math.round((v+pt[idx.indexOf(i)]-300)/10));
+  sc[idx[0]]-=sc.reduce((a,b)=>a+b,0);
   $('.tobi').each((i,e)=>{
-    if($(e).text()==='+10') sc[i]+=10;
-    if($(e).text()==='-10') sc[i]-=10;
+    if($(e).text()==='+10')sc[i]+=10;
+    if($(e).text()==='-10')sc[i]-=10;
   });
-
-  lastScore = sc;
-  $('.final').each((i,e)=>{
-    $(e).text(sc[i]).removeClass('plus minus')
-      .addClass(sc[i]>=0?'plus':'minus');
-  });
-
+  lastScore=sc;
+  $('.final').each((i,e)=>$(e).text(sc[i]).removeClass().addClass(`final ${sc[i]>=0?'plus':'minus'}`));
   $('#reg').prop('disabled',false);
 });
 
-// 登録
-$('#reg').on('click',function(){
-  if(!confirm('登録しますか？')) return;
-
-  fetch(GAS_URL,{
-    method:'POST',
-    body: JSON.stringify({ round, score:lastScore })
-  }).then(()=>{
-    alert('登録しました');
-    round++;
-    location.reload();
-  });
+/* 登録 */
+$('#reg').on('click',()=>{
+  if(!confirm('登録しますか？'))return;
+  fetch(GAS_URL,{method:'POST',body:JSON.stringify({round,score:lastScore})})
+    .then(()=>{alert('登録しました');location.reload();});
 });
 
-// スコア表示
-$('#show').on('click',loadScores);
-
-function loadScores(){
-  fetch(GAS_URL)
-    .then(r=>r.json())
-    .then(data=>{
-      let sum=[0,0,0,0];
-      let html='<table class="score-table"><tr><th>日時</th><th>A</th><th>B</th><th>C</th><th>D</th></tr>';
-      data.forEach(d=>{
-        if(d.valid){
-          for(let i=0;i<4;i++) sum[i]+=d.score[i];
-        }
-        html+=`<tr class="${d.valid?'':'invalid'}" data-row="${d.row}">
-          <td>${new Date(d.time).toLocaleString()}</td>
-          ${d.score.map(s=>`<td>${s}</td>`).join('')}
-        </tr>`;
-      });
-      html+=`<tr class="total"><td>合計</td>${sum.map(s=>`<td>${s}</td>`).join('')}</tr></table>`;
-      $('#scoreArea').html(html);
-
-      $('.score-table tr[data-row]').on('click',function(){
-        const row=$(this).data('row');
-        const invalid=$(this).hasClass('invalid');
-        if(confirm(invalid?'有効に戻しますか？':'無効にしますか？')){
-          fetch(GAS_URL+'?toggle='+row).then(loadScores);
-        }
-      });
+/* 表示 */
+$('#show').on('click',()=>{
+  fetch(GAS_URL).then(r=>r.json()).then(data=>{
+    let sum=[0,0,0,0];
+    let h='<table class="score-table"><tr><th>日時</th><th>A</th><th>B</th><th>C</th><th>D</th></tr>';
+    data.forEach(d=>{
+      if(d.valid)d.score.forEach((v,i)=>sum[i]+=v);
+      h+=`<tr class="${d.valid?'':'invalid'}" data-row="${d.row}">
+        <td>${new Date(d.time).toLocaleString()}</td>${d.score.map(s=>`<td>${s}</td>`).join('')}
+      </tr>`;
     });
-}
+    h+=`<tr class="total"><td>合計</td>${sum.map(s=>`<td>${s}</td>`).join('')}</tr></table>`;
+    $('#scoreArea').html(h);
+    $('.score-table tr[data-row]').on('click',function(){
+      if(confirm($(this).hasClass('invalid')?'有効に戻しますか？':'無効にしますか？')){
+        fetch(GAS_URL+'?toggle='+$(this).data('row')).then(()=>$('#show').click());
+      }
+    });
+  });
+});
 </script>
-
 </body>
 </html>
