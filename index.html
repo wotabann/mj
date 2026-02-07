@@ -372,6 +372,7 @@ qsa('.tobi-btn').forEach(btn=>{
       btn.className='tobi-btn tobi-plus';
       btn.textContent='+10';
     }
+    qs('#registerBtn').disabled = true;
   };
 });
 
@@ -443,6 +444,8 @@ qs('#calcBtn').onclick=()=>{
   });
 
   calculatedScores=finals;
+
+  qs('#registerBtn').disabled = false;
 };
 
 /* ========= 登録 ========= */
@@ -582,12 +585,16 @@ function resetAll(){
   // Aを再フォーカス
   const first = qsa('.score-input')[0];
   if (first) first.focus();
+
+  qs('#registerBtn').disabled = true;
 }
 
 // 初期フォーカス（プレイヤーA）
 window.addEventListener('load', () => {
   const first = qsa('.score-input')[0];
   if (first) first.focus();
+
+  qs('#registerBtn').disabled = true;
 });
 </script>
 </body>
