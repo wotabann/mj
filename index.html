@@ -415,14 +415,16 @@ document.querySelectorAll('.fly-btn').forEach(btn=>{
       return;
     }
 
-    if (fly[i]) {
-      fly[i] = false;
-      btn.classList.remove('on');
-    }
+    let isFly = !fly[i];
 
     // 他の飛ばしをOFF
     fly.fill(false);
     document.querySelectorAll('.fly-btn').forEach(b=>b.classList.remove('on'));
+  
+    if (isFly) {
+      fly[i] = true;
+      btn.classList.add('on');
+    }
 
     qs('#registerBtn').disabled = true;
   };
