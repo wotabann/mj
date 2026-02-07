@@ -448,17 +448,15 @@ qs('#registerBtn').onclick = async () => {
   try {
     showLoading(true);
 
-    const params = new URLSearchParams();
-    params.append('action', 'register');
-    params.append('a', calculatedScores[0]);
-    params.append('b', calculatedScores[1]);
-    params.append('c', calculatedScores[2]);
-    params.append('d', calculatedScores[3]);
+    const url =
+      GAS_URL +
+      '?action=register' +
+      '&a=' + encodeURIComponent(calculatedScores[0]) +
+      '&b=' + encodeURIComponent(calculatedScores[1]) +
+      '&c=' + encodeURIComponent(calculatedScores[2]) +
+      '&d=' + encodeURIComponent(calculatedScores[3]);
 
-    const res = await fetch(GAS_URL, {
-      method: 'POST',
-      body: params   // ★ headers を一切付けない
-    });
+    const res = await fetch(url);
 
     if (!res.ok) throw new Error('network');
 
@@ -546,14 +544,12 @@ async function toggleInvalid(no){
   try{
     showLoading(true);
 
-    const params = new URLSearchParams();
-    params.append('action', 'toggle');
-    params.append('no', no);
+    const url =
+      GAS_URL +
+      '?action=toggle' +
+      '&no=' + encodeURIComponent(no);
 
-    const res = await fetch(GAS_URL, {
-      method: 'POST',
-      body: params   // ★ headers なし
-    });
+    const res = await fetch(url);
 
     if(!res.ok) throw new Error('network');
 
