@@ -4,13 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>麻雀スコア</title>
-<script src="https://code.jquery.com/jquery.com/jquery-3.7.1.min.js"></script>
+
+<!-- ★★★ 正しい jQuery ★★★ -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
 <style>
-/* --- 省略せず全部書いてますが、前回と同じ配色 --- */
 :root{
-  --dark:#0b3b2e; --main:#145a43; --soft:#e9f3ef;
-  --gold:#c9a24d; --bg:#f4f7f6; --panel:#fff; --txt:#222;
+  --dark:#0b3b2e;
+  --main:#145a43;
+  --soft:#e9f3ef;
+  --gold:#c9a24d;
+  --bg:#f4f7f6;
+  --panel:#ffffff;
+  --txt:#222;
 }
 body{margin:0;background:var(--bg);font-family:system-ui;color:var(--txt);}
 header{background:linear-gradient(135deg,var(--dark),var(--main));color:#fff;padding:12px;}
@@ -37,32 +43,53 @@ tr.active{background:#d7ebe4;}
 #show{background:#e0e6e3;}
 
 .keypad{
-  position:fixed;right:0;bottom:0;width:70%;max-width:420px;
-  background:#fff;padding:12px;border-top-left-radius:20px;
-  display:grid;grid-template-columns:repeat(4,1fr);gap:10px;
+  position:fixed;
+  right:0;
+  bottom:0;
+  width:70%;
+  max-width:420px;
+  background:#fff;
+  padding:12px;
+  border-top-left-radius:20px;
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
 }
 .keypad.hidden{display:none;}
 .keypad button{padding:16px;font-size:22px;border-radius:14px;border:none;}
 
 #toggleKeypad{
-  position:fixed;right:14px;bottom:14px;
-  width:56px;height:56px;border-radius:50%;
-  background:var(--main);color:#fff;border:none;font-size:20px;
+  position:fixed;
+  right:14px;
+  bottom:14px;
+  width:56px;
+  height:56px;
+  border-radius:50%;
+  background:var(--main);
+  color:#fff;
+  border:none;
+  font-size:20px;
 }
 
 #loading{
-  position:fixed;inset:0;background:rgba(0,0,0,.4);
-  display:none;justify-content:center;align-items:center;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.4);
+  display:none;
+  justify-content:center;
+  align-items:center;
 }
 #loading div{
-  width:48px;height:48px;border:6px solid #fff;
-  border-top-color:transparent;border-radius:50%;
+  width:48px;
+  height:48px;
+  border:6px solid #fff;
+  border-top-color:transparent;
+  border-radius:50%;
   animation:spin 1s linear infinite;
 }
 @keyframes spin{to{transform:rotate(360deg);}}
 
 #history{margin-top:16px;}
-#history table{font-size:14px;}
 .invalid{text-decoration:line-through;color:#999;}
 </style>
 </head>
@@ -71,7 +98,7 @@ tr.active{background:#d7ebe4;}
 <header>🀄 MAHJONG SCORE</header>
 
 <main>
-<table id="inputTable">
+<table>
 <tr><th>名前</th><th>スコア</th><th>トビ</th><th>最終</th></tr>
 <tr data-i="0" class="active"><td>A</td><td><input class="score" readonly></td><td><button class="tobi"></button></td><td class="final"></td></tr>
 <tr data-i="1"><td>B</td><td><input class="score" readonly></td><td><button class="tobi"></button></td><td class="final"></td></tr>
@@ -106,7 +133,7 @@ let active=0;
 let fresh=[true,true,true,true];
 let lastResult=null;
 
-/* ---------------- フォーカス ---------------- */
+/* フォーカス */
 function focusRow(i){
   active=Math.max(0,Math.min(3,i));
   $('tr').removeClass('active');
@@ -118,13 +145,13 @@ $('.score').on('click',function(){
   focusRow($(this).closest('tr').data('i'));
 });
 
-/* ---------------- 電卓切替 ---------------- */
+/* 電卓表示切替 */
 $('#toggleKeypad').on('click',()=>{
   $('#keypad').toggleClass('hidden');
   $('#toggleKeypad').text($('#keypad').hasClass('hidden')?'電':'×');
 });
 
-/* ---------------- 電卓入力 ---------------- */
+/* 電卓入力 */
 $('.keypad button').on('click',function(){
   const k=$(this).data('k');
   const input=$('.score').eq(active);
@@ -166,33 +193,33 @@ $('.keypad button').on('click',function(){
   }
 });
 
-/* ---------------- トビ ---------------- */
+/* トビ */
 $('.tobi').on('click',function(){
   if($(this).text()===''){ $(this).text('+10').addClass('plus'); return; }
   if($(this).text()==='+10'){ $(this).text('-10').removeClass('plus').addClass('minus'); return; }
   $(this).text('').removeClass('minus');
 });
 
-/* ---------------- 入力検証 ---------------- */
-function validateInput(){
+/* 入力検証 */
+function validate(){
   const raw=$('.score').map((i,e)=>$(e).val().trim()).get();
   if(raw.includes('')){ alert('未入力があります'); return null; }
-
   const nums=raw.map(Number);
   if(nums.reduce((a,b)=>a+b,0)!==1000){
     alert('合計は1000にしてください'); return null;
   }
-
-  const plus=$('.tobi').filter((i,e)=>$(e).text()==='+10').length;
-  const minus=$('.tobi').filter((i,e)=>$(e).text()==='-10').length;
-  if(!((plus===0&&minus===0)||(plus===1&&minus===1))){
+  const p=$('.tobi').filter((i,e)=>$(e).text()==='+10').length;
+  const m=$('.tobi').filter((i,e)=>$(e).text()==='-10').length;
+  if(!((p===0&&m===0)||(p===1&&m===1))){
     alert('トビ設定が不正です'); return null;
   }
   return nums;
 }
 
-/* ---------------- 計算 ---------------- */
-function calculate(nums){
+/* 計算 */
+$('#calc').on('click',()=>{
+  const nums=validate();
+  if(!nums)return;
   const order=[0,1,2,3].sort((a,b)=>nums[b]-nums[a]);
   const uma=[500,100,-100,-300];
   let sc=nums.map((v,i)=>Math.round((v+uma[order.indexOf(i)]-300)/10));
@@ -202,13 +229,7 @@ function calculate(nums){
     if($(e).text()==='+10') sc[i]+=10;
     if($(e).text()==='-10') sc[i]-=10;
   });
-  return sc;
-}
 
-$('#calc').on('click',()=>{
-  const nums=validateInput();
-  if(!nums)return;
-  const sc=calculate(nums);
   lastResult=sc;
   $('.final').each((i,e)=>{
     $(e).text(sc[i]).removeClass('plus minus')
@@ -216,10 +237,10 @@ $('#calc').on('click',()=>{
   });
 });
 
-/* ---------------- 登録 ---------------- */
+/* 登録 */
 $('#reg').on('click',()=>{
-  if(!lastResult){ alert('先に計算してください'); return; }
-  if(!confirm('登録しますか？')) return;
+  if(!lastResult){alert('先に計算してください');return;}
+  if(!confirm('登録しますか？'))return;
 
   $('#loading').show();
   $.ajax({
@@ -227,7 +248,7 @@ $('#reg').on('click',()=>{
     method:'POST',
     contentType:'application/json',
     data:JSON.stringify({action:'register',score:lastResult})
-  }).done(res=>{
+  }).done(()=>{
     alert('登録しました');
     $('#show').click();
   }).fail(()=>{
@@ -235,15 +256,14 @@ $('#reg').on('click',()=>{
   }).always(()=>$('#loading').hide());
 });
 
-/* ---------------- 履歴 ---------------- */
+/* 履歴 */
 $('#show').on('click',()=>{
   $('#loading').show();
   $.getJSON(GAS_URL+'?action=list')
   .done(res=>{
     let html='<table><tr><th>No</th><th>日時</th><th>A</th><th>B</th><th>C</th><th>D</th><th>合計</th></tr>';
     res.forEach(r=>{
-      const cls=r.invalid?'invalid':'';
-      html+=`<tr class="${cls}">
+      html+=`<tr class="${r.invalid?'invalid':''}">
         <td>${r.no}</td><td>${r.date}</td>
         <td>${r.a}</td><td>${r.b}</td><td>${r.c}</td><td>${r.d}</td>
         <td>${r.sum}</td></tr>`;
