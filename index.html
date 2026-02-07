@@ -18,7 +18,7 @@
 body{
   margin:0;
   padding:10px;
-  padding-bottom:260px;
+  padding-bottom:270px;
   background:var(--green-dark);
   color:#fff;
   font-family:-apple-system,BlinkMacSystemFont,sans-serif;
@@ -141,7 +141,6 @@ button:disabled{opacity:.4;}
 
 <table class="input-table">
 <tr><th>名前</th><th>スコア</th><th>トビ賞</th><th>最終</th></tr>
-
 <tr data-idx="0"><td><span class="cursor">▶</span>A</td><td><input class="score" readonly></td><td><button class="toggle"></button></td><td class="final"></td></tr>
 <tr data-idx="1"><td><span class="cursor">▶</span>B</td><td><input class="score" readonly></td><td><button class="toggle"></button></td><td class="final"></td></tr>
 <tr data-idx="2"><td><span class="cursor">▶</span>C</td><td><input class="score" readonly></td><td><button class="toggle"></button></td><td class="final"></td></tr>
@@ -160,8 +159,8 @@ button:disabled{opacity:.4;}
   <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button data-k="up">↑</button>
   <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button><button data-k="down">↓</button>
   <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button data-k="sign">±</button>
-  <button data-k="0">0</button>
   <button data-k="clear">C</button>
+  <button data-k="0">0</button>
 </div>
 
 <script>
@@ -284,9 +283,11 @@ $('#save').on('click',()=>{
     method:'POST',
     body:JSON.stringify({round,raw:lastRaw,score:lastScore})
   }).then(()=>{
+    alert('登録しました');
+    reset();
+    loadHistory();
     round++;
     $('#round').text(round);
-    reset();
   });
 });
 
@@ -300,8 +301,8 @@ function reset(){
   $('#save').prop('disabled',true);
 }
 
-/* 履歴表示 */
-$('#show').on('click',()=>{
+/* 履歴取得 */
+function loadHistory(){
   fetch(GAS_URL+'?mode=get')
     .then(r=>r.json())
     .then(d=>{
@@ -316,8 +317,14 @@ $('#show').on('click',()=>{
         html+='</tr>';
       });
       html+='<tr><th>合計</th>'+sum.map(v=>`<th class="${v>=0?'plus':'minus'}">${v}</th>`).join('')+'</tr></table></div>';
-      $('#history').html(html).toggle();
+      $('#history').html(html);
     });
+}
+
+/* 表示切替 */
+$('#show').on('click',()=>{
+  $('#history').toggle();
+  if($('#history').is(':visible')) loadHistory();
 });
 
 /* テーマ */
