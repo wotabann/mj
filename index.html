@@ -631,7 +631,20 @@ function renderHistory(data) {
     if (!r.invalid) {
       scores.forEach((v, i) => total[i] += v);
     }
+    
+    // === プレイヤー別 合計行 ===
+    const tr = document.createElement('tr');
+    tr.style.fontWeight = 'bold';
+    tr.innerHTML = `
+      <td colspan="2">合計</td>
+      <td>${total[0]}</td>
+      <td>${total[1]}</td>
+      <td>${total[2]}</td>
+      <td>${total[3]}</td>
+    `;
+    tb.appendChild(tr);
 
+    // === プレイヤー別 半荘行 ===
     let innerHTML = ``;
     innerHTML += `<td>${r.no}</td>`;
     innerHTML += `<td>${r.datetime.slice(0,16)}</td>`;
@@ -645,24 +658,10 @@ function renderHistory(data) {
         innerHTML += `<td class="${cls}">${v}</td>`;
       }
     }
-
     tr.innerHTML = innerHTML;
-
     tr.onclick = () => toggleInvalid(r.no);
     tb.appendChild(tr);
   });
-
-  // === プレイヤー別 合計行 ===
-  const tr = document.createElement('tr');
-  tr.style.fontWeight = 'bold';
-  tr.innerHTML = `
-    <td colspan="2">合計</td>
-    <td>${total[0]}</td>
-    <td>${total[1]}</td>
-    <td>${total[2]}</td>
-    <td>${total[3]}</td>
-  `;
-  tb.appendChild(tr);
 }
 
 
