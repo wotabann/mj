@@ -415,12 +415,15 @@ document.querySelectorAll('.fly-btn').forEach(btn=>{
       return;
     }
 
+    if (fly[i]) {
+      fly[i] = false;
+      btn.classList.remove('on');
+    }
+
     // 他の飛ばしをOFF
     fly.fill(false);
     document.querySelectorAll('.fly-btn').forEach(b=>b.classList.remove('on'));
 
-    fly[i] = !fly[i];
-    btn.classList.toggle('on', fly[i]);
     qs('#registerBtn').disabled = true;
   };
 });
@@ -441,9 +444,9 @@ qs('#btnFill').onclick=()=>{
 qs('#calcBtn').onclick=()=>{
   const inputs=qsa('.score-input');
   const scores=inputs.map(i=>i.value===''?null:+i.value);
-  if(scores.filter(v=>v===null).length>=2){
+  if(scores.filter(v=>v===null).length>0){
     calculatedScores = null;
-    alert('未入力は1人までです');
+    alert('未入力の欄があります。');
     return;
   }
   const total=scores.reduce((a,b)=>a+b,0);
