@@ -20,8 +20,8 @@
 body{
   margin:0;
   background:var(--bg);
-  color:var(--txt);
   font-family:system-ui;
+  color:var(--txt);
 }
 
 header{
@@ -32,43 +32,34 @@ header{
 
 main{
   padding:12px;
-  padding-bottom:320px;
+  padding-bottom:300px;
 }
 
-/* ===== 入力テーブル ===== */
+/* ===== 入力 ===== */
 table{
   width:100%;
-  border-collapse:collapse;
   background:var(--panel);
   border-radius:14px;
-  overflow:hidden;
+  border-collapse:collapse;
 }
-th{
-  background:var(--soft);
-  padding:8px;
-}
-td{
+th,td{
   padding:8px;
   text-align:center;
-  border-top:1px solid #ddd;
 }
-tr.active{
-  background:#d7ebe4;
-}
+th{background:var(--soft);}
+tr+tr td{border-top:1px solid #ddd;}
+tr.active{background:#d7ebe4;}
 
 .score{
   width:80px;
   font-size:20px;
   text-align:right;
-  border-radius:8px;
-  border:1px solid #aaa;
 }
 
 .tobi{
   width:56px;
   border-radius:20px;
   border:none;
-  font-weight:bold;
 }
 .tobi.plus{background:#c9f2d8;}
 .tobi.minus{background:#f6caca;}
@@ -76,7 +67,6 @@ tr.active{
 .final.plus{color:#1e8e3e;}
 .final.minus{color:#c62828;}
 
-/* ===== ボタン ===== */
 .actions{
   margin-top:12px;
   display:flex;
@@ -107,15 +97,15 @@ tr.active{
   grid-template-columns:repeat(4,1fr);
   gap:10px;
 }
-.keypad button{
-  font-size:22px;
-  padding:16px;
-  border:none;
-  border-radius:14px;
-}
 .keypad.hidden{display:none;}
+.keypad button{
+  padding:16px;
+  font-size:22px;
+  border-radius:14px;
+  border:none;
+}
 
-/* 電／× 共通丸ボタン */
+/* 電／× */
 #toggleKeypad{
   position:fixed;
   right:14px;
@@ -127,10 +117,9 @@ tr.active{
   color:#fff;
   border:none;
   font-size:20px;
-  display:none;
 }
 
-/* ===== ローディング ===== */
+/* ローディング */
 #loading{
   position:fixed;
   inset:0;
@@ -138,7 +127,6 @@ tr.active{
   display:none;
   justify-content:center;
   align-items:center;
-  z-index:999;
 }
 #loading div{
   width:48px;height:48px;
@@ -152,7 +140,6 @@ tr.active{
 </head>
 
 <body>
-
 <header>🀄 MAHJONG SCORE</header>
 
 <main>
@@ -166,111 +153,100 @@ tr.active{
 
 <div class="actions">
   <button id="calc">計算</button>
-  <button id="reg" disabled>登録</button>
+  <button id="reg">登録</button>
   <button id="show">履歴</button>
 </div>
-
-<div id="history"></div>
 </main>
 
-<!-- 電卓 -->
 <div class="keypad" id="keypad">
   <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button data-k="up">↑</button>
   <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button><button data-k="down">↓</button>
   <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button data-k="pm">±</button>
-  <button data-k="clear">C</button><button data-k="0">0</button>
+  <button data-k="clear">C</button><button data-k="0">0</button><button data-k="fill">補</button>
 </div>
 
 <button id="toggleKeypad">×</button>
 <div id="loading"><div></div></div>
 
 <script>
-const GAS_URL = '＜GASのURL＞';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycby1XFM-wXWJKnuSnLXpuUGhT6dE-bmrgFwVI_V5XVzLlHTnsFr0TiVRGRfNlqK38z_a/exec';
 
-let activeIndex = 0;
-let isFresh = [true,true,true,true];
-let lastScore = null;
+let active=0;
+let fresh=[true,true,true,true];
 
-/* ===== フォーカス ===== */
+/* フォーカス */
 function focusRow(i){
-  activeIndex = Math.max(0,Math.min(3,i));
+  active=Math.max(0,Math.min(3,i));
   $('tr').removeClass('active');
-  $(`tr[data-i="${activeIndex}"]`).addClass('active');
-  isFresh[activeIndex] = true;
+  $(`tr[data-i="${active}"]`).addClass('active');
+  fresh[active]=true;
 }
 
 $('.score').on('click',function(){
   focusRow($(this).closest('tr').data('i'));
 });
 
-/* ===== 電卓トグル ===== */
+/* 電卓切替 */
 $('#toggleKeypad').on('click',()=>{
   $('#keypad').toggleClass('hidden');
-  $('#toggleKeypad').text($('#keypad').hasClass('hidden') ? '電' : '×');
+  $('#toggleKeypad').text($('#keypad').hasClass('hidden')?'電':'×');
 });
 
-/* ===== 電卓入力 ===== */
+/* 電卓入力 */
 $('.keypad button').on('click',function(){
   const k=$(this).data('k');
-  const input=$('.score').eq(activeIndex);
+  const input=$('.score').eq(active);
 
   if(['0','1','2','3','4','5','6','7','8','9','pm'].includes(k)){
-    if(isFresh[activeIndex]){
+    if(fresh[active]){
       input.val('');
-      isFresh[activeIndex]=false;
+      fresh[active]=false;
     }
   }
 
-  if(k==='up') return focusRow(activeIndex-1);
-  if(k==='down') return focusRow(activeIndex+1);
-  if(k==='clear'){ input.val(''); isFresh[activeIndex]=true; return; }
+  if(k==='up') return focusRow(active-1);
+  if(k==='down') return focusRow(active+1);
+  if(k==='clear'){input.val('');fresh[active]=true;return;}
   if(k==='pm'){
     const v=input.val();
-    if(!v) return;
+    if(!v)return;
     input.val(v.startsWith('-')?v.slice(1):'-'+v);
+    return;
+  }
+
+  if(k==='fill'){
+    let vals=$('.score').map((i,e)=>$(e).val()===''?null:Number($(e).val())).get();
+    const empties=vals.map((v,i)=>v===null?i:null).filter(v=>v!==null);
+    if(empties.length!==1){
+      alert('空欄が1人のときのみ補完できます');
+      return;
+    }
+    const idx=empties[0];
+    const sum=vals.reduce((a,b)=>a+(b??0),0);
+    $('.score').eq(idx).val(1000-sum);
     return;
   }
 
   input.val((input.val()||'')+k);
 });
 
-/* ===== トビ ===== */
+/* トビ */
 $('.tobi').on('click',function(){
   if($(this).text()===''){ $(this).text('+10').addClass('plus'); return; }
   if($(this).text()==='+10'){ $(this).text('-10').removeClass('plus').addClass('minus'); return; }
   $(this).text('').removeClass('minus');
 });
 
-/* ===== 計算 ===== */
+/* 計算 */
 $('#calc').on('click',()=>{
-  let raw=$('.score').map((i,e)=>{
-    const v=$(e).val();
-    return v===''?null:Number(v);
-  }).get();
+  const raw=$('.score').map((i,e)=>$(e).val()===''?null:Number($(e).val())).get();
+  if(raw.includes(null)){ alert('未入力があります'); return; }
 
-  const emptyIdx = raw.map((v,i)=>v===null?i:null).filter(v=>v!==null);
-
-  // ① 空欄2以上
-  if(emptyIdx.length>1){
-    alert('未入力は1人までです');
-    return;
-  }
-
-  // ② 補完
-  if(emptyIdx.length===1){
-    const idx=emptyIdx[0];
-    const sum3=raw.reduce((a,b)=>a+(b??0),0);
-    raw[idx]=1000-sum3;
-    $('.score').eq(idx).val(raw[idx]);
-  }
-
-  // ③ 合計チェック
   if(raw.reduce((a,b)=>a+b,0)!==1000){
     alert('合計は1000にしてください');
     return;
   }
 
-  // ④ トビ整合性
   const plus=$('.tobi').filter((i,e)=>$(e).text()==='+10').length;
   const minus=$('.tobi').filter((i,e)=>$(e).text()==='-10').length;
   if(!((plus===0&&minus===0)||(plus===1&&minus===1))){
@@ -278,7 +254,6 @@ $('#calc').on('click',()=>{
     return;
   }
 
-  // ⑤ 最終計算
   const order=[0,1,2,3].sort((a,b)=>raw[b]-raw[a]);
   const uma=[500,100,-100,-300];
   let sc=raw.map((v,i)=>Math.round((v+uma[order.indexOf(i)]-300)/10));
@@ -289,15 +264,11 @@ $('#calc').on('click',()=>{
     if($(e).text()==='-10') sc[i]-=10;
   });
 
-  lastScore=sc;
   $('.final').each((i,e)=>{
     $(e).text(sc[i]).removeClass('plus minus')
       .addClass(sc[i]>=0?'plus':'minus');
   });
-
-  $('#reg').prop('disabled',false);
 });
 </script>
-
 </body>
 </html>
