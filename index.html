@@ -639,15 +639,6 @@ function renderHistory(data) {
       }
     }
 
-    tr.innerHTML = `
-      <td>${r.no}</td>
-      <td>${r.datetime}</td>
-      <td>${r.a}</td>
-      <td>${r.b}</td>
-      <td>${r.c}</td>
-      <td>${r.d}</td>
-    `;
-
     tr.innerHTML = innerHTML;
 
     tr.onclick = () => toggleInvalid(r.no);
@@ -708,6 +699,8 @@ function resetAll(){
   qsa('.tobi-btn').forEach(b=>{b.className='tobi-btn';});
   qsa('.fly-btn').forEach(b=>{b.className='fly-btn';});
   qsa('.final').forEach(td=>td.textContent='');
+  fly.fill(false);
+  tobi.fill(false);
   calculatedScores=null;
   // Aを再フォーカス
   const first = qsa('.score-input')[0];
