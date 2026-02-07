@@ -4,21 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>麻雀スコア</title>
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://code.jquery.com/jquery.com/jquery-3.7.1.min.js"></script>
 
 <style>
+/* --- 省略せず全部書いてますが、前回と同じ配色 --- */
 :root{
-  --dark:#0b3b2e;
-  --main:#145a43;
-  --soft:#e9f3ef;
-  --gold:#c9a24d;
-  --bg:#f4f7f6;
-  --panel:#ffffff;
-  --txt:#222;
+  --dark:#0b3b2e; --main:#145a43; --soft:#e9f3ef;
+  --gold:#c9a24d; --bg:#f4f7f6; --panel:#fff; --txt:#222;
 }
 body{margin:0;background:var(--bg);font-family:system-ui;color:var(--txt);}
 header{background:linear-gradient(135deg,var(--dark),var(--main));color:#fff;padding:12px;}
-main{padding:12px;padding-bottom:300px;}
+main{padding:12px;padding-bottom:340px;}
 
 table{width:100%;background:#fff;border-radius:14px;border-collapse:collapse;}
 th,td{padding:8px;text-align:center;}
@@ -64,6 +60,10 @@ tr.active{background:#d7ebe4;}
   animation:spin 1s linear infinite;
 }
 @keyframes spin{to{transform:rotate(360deg);}}
+
+#history{margin-top:16px;}
+#history table{font-size:14px;}
+.invalid{text-decoration:line-through;color:#999;}
 </style>
 </head>
 
@@ -71,7 +71,7 @@ tr.active{background:#d7ebe4;}
 <header>🀄 MAHJONG SCORE</header>
 
 <main>
-<table>
+<table id="inputTable">
 <tr><th>名前</th><th>スコア</th><th>トビ</th><th>最終</th></tr>
 <tr data-i="0" class="active"><td>A</td><td><input class="score" readonly></td><td><button class="tobi"></button></td><td class="final"></td></tr>
 <tr data-i="1"><td>B</td><td><input class="score" readonly></td><td><button class="tobi"></button></td><td class="final"></td></tr>
@@ -84,8 +84,11 @@ tr.active{background:#d7ebe4;}
   <button id="reg">登録</button>
   <button id="show">履歴</button>
 </div>
+
+<div id="history"></div>
 </main>
 
+<!-- 電卓 -->
 <div class="keypad" id="keypad">
   <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button data-k="up">↑</button>
   <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button><button data-k="down">↓</button>
@@ -99,152 +102,157 @@ tr.active{background:#d7ebe4;}
 <script>
 const GAS_URL = 'https://script.google.com/macros/s/AKfycby1XFM-wXWJKnuSnLXpuUGhT6dE-bmrgFwVI_V5XVzLlHTnsFr0TiVRGRfNlqK38z_a/exec';
 
-let active = 0;
-let fresh = [true,true,true,true];
+let active=0;
+let fresh=[true,true,true,true];
+let lastResult=null;
 
-/* フォーカス */
+/* ---------------- フォーカス ---------------- */
 function focusRow(i){
-  active = Math.max(0,Math.min(3,i));
+  active=Math.max(0,Math.min(3,i));
   $('tr').removeClass('active');
   $(`tr[data-i="${active}"]`).addClass('active');
-  fresh[active] = true;
+  fresh[active]=true;
 }
 
 $('.score').on('click',function(){
   focusRow($(this).closest('tr').data('i'));
 });
 
-/* 電卓表示切替 */
+/* ---------------- 電卓切替 ---------------- */
 $('#toggleKeypad').on('click',()=>{
   $('#keypad').toggleClass('hidden');
   $('#toggleKeypad').text($('#keypad').hasClass('hidden')?'電':'×');
 });
 
-/* 電卓入力 */
+/* ---------------- 電卓入力 ---------------- */
 $('.keypad button').on('click',function(){
-  const k = $(this).data('k');
-  const input = $('.score').eq(active);
+  const k=$(this).data('k');
+  const input=$('.score').eq(active);
 
   if(['0','1','2','3','4','5','6','7','8','9','pm'].includes(k)){
     if(fresh[active]){
       input.val('');
-      fresh[active] = false;
+      fresh[active]=false;
     }
   }
 
   if(k==='up') return focusRow(active-1);
   if(k==='down') return focusRow(active+1);
-  if(k==='clear'){ input.val(''); fresh[active]=true; return; }
+  if(k==='clear'){input.val('');fresh[active]=true;return;}
 
   if(k==='pm'){
-    const v = input.val();
-    if(!v) return;
-    input.val(v.startsWith('-') ? v.slice(1) : '-' + v);
+    const v=input.val();
+    if(!v)return;
+    input.val(v.startsWith('-')?v.slice(1):'-'+v);
     return;
   }
 
   if(k==='fill'){
-    const vals = $('.score').map((i,e)=>{
-      const v = $(e).val().trim();
-      return v==='' ? null : Number(v);
-    }).get();
-
-    const empties = vals.map((v,i)=>v===null?i:null).filter(v=>v!==null);
+    const vals=$('.score').map((i,e)=>$(e).val().trim()).get();
+    const empties=vals.map((v,i)=>v===''?i:null).filter(v=>v!==null);
     if(empties.length!==1){
       alert('空欄が1人のときのみ補完できます');
       return;
     }
-    const idx = empties[0];
-    const sum = vals.reduce((a,b)=>a+(b??0),0);
-    $('.score').eq(idx).val(1000 - sum);
-    fresh[idx] = false;
+    const sum=vals.reduce((a,b)=>a+(b===''?0:Number(b)),0);
+    const idx=empties[0];
+    $('.score').eq(idx).val(1000-sum);
+    fresh[idx]=false;
     return;
   }
 
-  input.val((input.val()||'') + k);
+  if(/^\d$/.test(k)){
+    input.val((input.val()||'')+k);
+  }
 });
 
-/* トビ */
+/* ---------------- トビ ---------------- */
 $('.tobi').on('click',function(){
   if($(this).text()===''){ $(this).text('+10').addClass('plus'); return; }
   if($(this).text()==='+10'){ $(this).text('-10').removeClass('plus').addClass('minus'); return; }
   $(this).text('').removeClass('minus');
 });
 
-/* 計算 */
-$('#calc').on('click',()=>{
-  const raw = $('.score').map((i,e)=>{
-    const v = $(e).val().trim();
-    return v==='' ? null : Number(v);
-  }).get();
+/* ---------------- 入力検証 ---------------- */
+function validateInput(){
+  const raw=$('.score').map((i,e)=>$(e).val().trim()).get();
+  if(raw.includes('')){ alert('未入力があります'); return null; }
 
-  if(raw.includes(null)){
-    alert('未入力があります');
-    return;
+  const nums=raw.map(Number);
+  if(nums.reduce((a,b)=>a+b,0)!==1000){
+    alert('合計は1000にしてください'); return null;
   }
 
-  if(raw.reduce((a,b)=>a+b,0)!==1000){
-    alert('合計は1000にしてください');
-    return;
+  const plus=$('.tobi').filter((i,e)=>$(e).text()==='+10').length;
+  const minus=$('.tobi').filter((i,e)=>$(e).text()==='-10').length;
+  if(!((plus===0&&minus===0)||(plus===1&&minus===1))){
+    alert('トビ設定が不正です'); return null;
   }
+  return nums;
+}
 
-  const plus = $('.tobi').filter((i,e)=>$(e).text()==='+10').length;
-  const minus = $('.tobi').filter((i,e)=>$(e).text()==='-10').length;
-  if(!((plus===0 && minus===0) || (plus===1 && minus===1))){
-    alert('トビ設定が不正です');
-    return;
-  }
-
-  const order=[0,1,2,3].sort((a,b)=>raw[b]-raw[a]);
+/* ---------------- 計算 ---------------- */
+function calculate(nums){
+  const order=[0,1,2,3].sort((a,b)=>nums[b]-nums[a]);
   const uma=[500,100,-100,-300];
-  let sc = raw.map((v,i)=>Math.round((v + uma[order.indexOf(i)] - 300)/10));
-  sc[order[0]] -= sc.reduce((a,b)=>a+b,0);
+  let sc=nums.map((v,i)=>Math.round((v+uma[order.indexOf(i)]-300)/10));
+  sc[order[0]]-=sc.reduce((a,b)=>a+b,0);
 
   $('.tobi').each((i,e)=>{
     if($(e).text()==='+10') sc[i]+=10;
     if($(e).text()==='-10') sc[i]-=10;
   });
+  return sc;
+}
 
+$('#calc').on('click',()=>{
+  const nums=validateInput();
+  if(!nums)return;
+  const sc=calculate(nums);
+  lastResult=sc;
   $('.final').each((i,e)=>{
     $(e).text(sc[i]).removeClass('plus minus')
       .addClass(sc[i]>=0?'plus':'minus');
   });
 });
 
-/* 登録 */
+/* ---------------- 登録 ---------------- */
 $('#reg').on('click',()=>{
+  if(!lastResult){ alert('先に計算してください'); return; }
   if(!confirm('登録しますか？')) return;
 
   $('#loading').show();
   $.ajax({
     url:GAS_URL,
     method:'POST',
-    data:JSON.stringify({action:'register'}),
-    contentType:'application/json'
+    contentType:'application/json',
+    data:JSON.stringify({action:'register',score:lastResult})
   }).done(res=>{
     alert('登録しました');
-    $('.score,.final').val('').text('');
-    $('.tobi').text('').removeClass('plus minus');
+    $('#show').click();
   }).fail(()=>{
     alert('通信に失敗しました');
-  }).always(()=>{
-    $('#loading').hide();
-  });
+  }).always(()=>$('#loading').hide());
 });
 
-/* 履歴 */
+/* ---------------- 履歴 ---------------- */
 $('#show').on('click',()=>{
   $('#loading').show();
-  $.ajax({
-    url:GAS_URL + '?action=list',
-    method:'GET'
-  }).done(res=>{
-    alert('履歴取得成功（※表示処理は省略）');
-  }).fail(()=>{
-    alert('通信に失敗しました');
-  }).always(()=>{
-    $('#loading').hide();
-  });
+  $.getJSON(GAS_URL+'?action=list')
+  .done(res=>{
+    let html='<table><tr><th>No</th><th>日時</th><th>A</th><th>B</th><th>C</th><th>D</th><th>合計</th></tr>';
+    res.forEach(r=>{
+      const cls=r.invalid?'invalid':'';
+      html+=`<tr class="${cls}">
+        <td>${r.no}</td><td>${r.date}</td>
+        <td>${r.a}</td><td>${r.b}</td><td>${r.c}</td><td>${r.d}</td>
+        <td>${r.sum}</td></tr>`;
+    });
+    html+='</table>';
+    $('#history').html(html);
+  })
+  .fail(()=>alert('通信に失敗しました'))
+  .always(()=>$('#loading').hide());
 });
 </script>
 </body>
