@@ -428,8 +428,9 @@ qs('#calcBtn').onclick=()=>{
   const rank=scores.map(s=>sorted.indexOf(s));
   let finals=scores.map((s,i)=>{
     let v=s+[500,100,-100,-300][rank[i]];
+    v = Math.floor(v / 10 + 0.5) * 10;
     v=(v-300)/10;
-    v=Math.round(v+0.4);
+    //v=Math.round(v+0.4);
     return v;
   });
   const sum3=finals.reduce((a,b)=>a+b,0)-finals[rank.indexOf(0)];
