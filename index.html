@@ -339,12 +339,12 @@ function applyInput(val){
     needClear = false;
   }
   focusedInput.value += val;
+  qs('#registerBtn').disabled = true;
 }
 
 qsa('.calc-btn').forEach(btn=>{
   if(/^\d$/.test(btn.textContent)){
     btn.onclick=()=>applyInput(btn.textContent);
-    qs('#registerBtn').disabled = true;
   }
 });
 
@@ -419,8 +419,8 @@ document.querySelectorAll('.fly-btn').forEach(btn=>{
     fly.fill(false);
     document.querySelectorAll('.fly-btn').forEach(b=>b.classList.remove('on'));
 
-    fly[i] = true;
-    btn.classList.add('on');
+    fly[i] = !fly[i];
+    btn.classList.toggle('on', fly[i]);
     qs('#registerBtn').disabled = true;
   };
 });
