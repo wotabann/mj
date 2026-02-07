@@ -460,20 +460,25 @@ qs('#registerBtn').onclick = async () => {
       method: 'POST',
       body: params
     });
-    
 
-    if (!res.ok) throw new Error();
+    if (!res.ok) throw new Error('network');
 
-    const data = await res.json();
+    // ★ ここが超重要
+    const text = await res.text();
+    const data = JSON.parse(text);
+
     renderHistory(data);
     resetAll();
     alert('登録しました');
-  } catch {
+
+  } catch (e) {
+    console.error(e);
     alert('通信に失敗しました');
   } finally {
     showLoading(false);
   }
 };
+
 
 
 /* ========= 履歴 ========= */
@@ -540,28 +545,34 @@ function renderHistory(data) {
 
 async function toggleInvalid(no){
   if(!confirm('有効/無効を切り替えますか？')) return;
+
   try{
     showLoading(true);
 
     const params = new URLSearchParams();
-    params.append('action', 'toggle');
+    params.append('action','toggle');
     params.append('no', no);
 
-    const res = await fetch(GAS_URL, {
-      method: 'POST',
+    const res = await fetch(GAS_URL,{
+      method:'POST',
       body: params
     });
 
-    if(!res.ok) throw '';
-    const data = await res.json();
+    if(!res.ok) throw new Error('network');
+
+    const text = await res.text();
+    const data = JSON.parse(text);
+
     renderHistory(data);
 
-  }catch{
+  }catch(e){
+    console.error(e);
     alert('通信に失敗しました');
   }finally{
     showLoading(false);
   }
 }
+
 
 
 /* ========= リセット ========= */
