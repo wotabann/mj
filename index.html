@@ -455,7 +455,7 @@ qs('#registerBtn').onclick = async () => {
     params.append('b', calculatedScores[1]);
     params.append('c', calculatedScores[2]);
     params.append('d', calculatedScores[3]);
-    alert('aa');
+
     const res = await fetch(GAS_URL, {
       method: 'POST',
       body: params
@@ -542,20 +542,27 @@ async function toggleInvalid(no){
   if(!confirm('有効/無効を切り替えますか？')) return;
   try{
     showLoading(true);
-    const res=await fetch(GAS_URL,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({action:'toggle',no})
+
+    const params = new URLSearchParams();
+    params.append('action', 'toggle');
+    params.append('no', no);
+
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      body: params
     });
+
     if(!res.ok) throw '';
-    const data=await res.json();
+    const data = await res.json();
     renderHistory(data);
+
   }catch{
     alert('通信に失敗しました');
   }finally{
     showLoading(false);
   }
 }
+
 
 /* ========= リセット ========= */
 function resetAll(){
