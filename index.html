@@ -10,6 +10,7 @@
 :root{
   --green:#0f3d2e;
   --green-light:#1e6b50;
+  --gold:#c9a24d;
   --table-bg:#f6f7f8;
   --border-blue:#c7d8ee;
   --text:#222;
@@ -106,6 +107,13 @@ header{
   color:#fff;
 }
 
+#registerBtn{
+  background:var(--gold); color:#222;
+}
+#historyBtn{
+  background:#e0e6e3;
+}
+
 button:disabled {
   background-color: #b0b0b0; /* グレー */
   color: #666;
@@ -191,6 +199,8 @@ button:disabled {
 
 .calc-btn.close{
   background:#ccc;
+  border-radius: 50px;
+  font-size: 20px;
 }
 
 .calc-toggle{
@@ -206,11 +216,6 @@ button:disabled {
   display:none;
   align-items:center;
   justify-content:center;
-}
-
-#btnClose{
-  border-radius: 50px; !important
-  font-size: 20px;
 }
 
 /* ローディング */
